@@ -62,7 +62,7 @@
         { "san": "Qf6" },
         { "san": "c3", "user": true, "why": "Tu prépares Nc3 sans clouage et tu interdis Nb4. La dame en f6 sera repoussée plus tard." },
         { "san": "Nge7" },
-        { "san": "Nd2", "user": true, "why": "Le cavalier b1 va en d2 (pas Nc3 : le pion c3 bloque la case). De d2 il pourra rejoindre f3 ou e4 selon la suite. Tu prépares Qf3, O-O et la position est saine." }
+        { "san": "Bc4", "user": true, "alts": ["Nd2"], "why": "Tu développes le fou f1 sur la diagonale a2-g8 (vise f7). Coup principal Stockfish (+0.27). NE PAS jouer Nd2 ici (ça bloquerait justement ce fou). Pour le cavalier b1, ça viendra après (Nd2 puis O-O ou Qe2)." }
       ]
     },
 
