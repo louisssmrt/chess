@@ -100,6 +100,8 @@
     </div>
 
     <div class="controls">
+      <button class="secondary" id="btn-back" title="Flèche gauche">← Retour</button>
+      <button class="secondary" id="btn-forward" title="Flèche droite">Avancer →</button>
       <button id="btn-next">Ligne suivante</button>
       <button class="secondary" id="btn-restart">Recommencer</button>
     </div>
@@ -109,7 +111,7 @@
       <div class="stats">
         <div><div class="stat-value" id="stat-top1">0</div><div class="stat-label">Top 1</div></div>
         <div><div class="stat-value" id="stat-alt">0</div><div class="stat-label">Alt OK</div></div>
-        <div><div class="stat-value" id="stat-ko">0</div><div class="stat-label">Faux</div></div>
+        <div><div class="stat-value" id="stat-ko">0</div><div class="stat-label">Hors T3</div></div>
         <div><div class="stat-value" id="stat-lines">0</div><div class="stat-label">Lignes</div></div>
       </div>
     </div>
@@ -125,10 +127,11 @@
 // --- State ---
 let lines = [], toleranceCp = 30, activeFilter = 'all';
 let currentLine = null, board = null, game = null;
-let drillUserMovesPlayed = 0, drillTotalMoves = 5;
-let stats = { top1: 0, alt: 0, ko: 0, lines_done: 0 };
+let stats = { top1: 0, alt: 0, outside: 0, lines_done: 0 };
 let userColor = 'w';
-let exploreMode = false;
+let lastMoveBy = null;
+let undoneStack = [];
+let userMovesCount = 0;
 
 // Engine
 let stockfish = null, engineReady = false;
@@ -287,9 +290,9 @@ function nextLine() {
 }
 
 function startLine() {
-  drillUserMovesPlayed = 0;
-  drillTotalMoves = currentLine.drill_moves || 5;
-  exploreMode = false;
+  userMovesCount = 0;
+  lastMoveBy = null;
+  undoneStack = [];
   game = new Chess();
   for (const m of currentLine.setup) game.move(m);
 
@@ -328,30 +331,40 @@ function showIntroFeedback() {
 }
 
 function advance() {
-  if (drillUserMovesPlayed >= drillTotalMoves) {
-    finishLine();
-    return;
-  }
   const turn = game.turn();
   if (turn === userColor) {
-    // User's turn
     showUserTurnFeedback();
     analyzePosition(game.fen(), 12);
   } else {
-    // Engine plays opponent
-    showOpponentThinking();
-    analyzePosition(game.fen(), 12);
-    waitForEngine(10, playOpponentMove);
+    // Opponent's turn - engine auto-plays ONLY if last move was user's color
+    // (so if user manually plays opponent's color, we don't auto-respond)
+    if (lastMoveBy === userColor) {
+      showOpponentThinking();
+      analyzePosition(game.fen(), 12);
+      waitForEngine(10, playOpponentMove);
+    } else {
+      // User is exploring both sides, just analyze and wait
+      showFreeExploreFeedback();
+      analyzePosition(game.fen(), 12);
+    }
   }
+}
+
+function showFreeExploreFeedback() {
+  const fb = document.getElementById('feedback');
+  fb.className = 'panel feedback info';
+  fb.innerHTML = `
+    <div class="label">Exploration libre</div>
+    <div style="font-size: 13px; color: var(--muted);">Tu joues l'adversaire manuellement. Stockfish analyse - aucun coup auto. Joue ton propre coup pour relancer la séquence drill.</div>
+  `;
 }
 
 function showUserTurnFeedback() {
   const fb = document.getElementById('feedback');
   fb.className = 'panel feedback';
-  const moveNum = drillUserMovesPlayed + 1;
   fb.innerHTML = `
-    <div class="label">À toi - coup ${moveNum}/${drillTotalMoves}</div>
-    <div style="font-size: 14px; color: var(--muted);">Joue ton coup. L'engine te dit son top 3 - si tu matches le top, c'est +1.</div>
+    <div class="label">À toi - coup ${userMovesCount + 1}</div>
+    <div style="font-size: 14px; color: var(--muted);">Joue ton coup. Stockfish indique son top 3 - tu vois après si tu as matché.</div>
   `;
 }
 
@@ -367,144 +380,121 @@ function showOpponentThinking() {
 function playOpponentMove() {
   const top = pvs[1];
   if (!top) { setTimeout(() => waitForEngine(10, playOpponentMove), 300); return; }
+  const colorMoving = game.turn();
   const moveObj = game.move({
     from: top.uci.substr(0, 2),
     to: top.uci.substr(2, 2),
     promotion: top.uci.length > 4 ? top.uci.substr(4, 1) : undefined
   });
   if (!moveObj) { console.error('opponent move illegal', top); return; }
+  lastMoveBy = colorMoving;
+  undoneStack = []; // clear redo on new move
   board.position(game.fen(), true);
   updateMovesPlayed();
   setTimeout(advance, 700);
 }
 
 function onDragStart(source, piece) {
-  // Allow free movement in explore mode (after line completes)
-  if (exploreMode) {
-    const turn = game.turn();
-    if ((turn === 'w' && piece.search(/^b/) !== -1) || (turn === 'b' && piece.search(/^w/) !== -1)) return false;
-    return true;
-  }
-  if (drillUserMovesPlayed >= drillTotalMoves) return false;
+  // Always allow movement of any color (always-explore mode)
   const turn = game.turn();
-  if (turn !== userColor) return false;
   if ((turn === 'w' && piece.search(/^b/) !== -1) || (turn === 'b' && piece.search(/^w/) !== -1)) return false;
-  // Block input if engine not at minimum depth
-  if (!pvs[1] || engineDepth < 10) {
-    return false;
-  }
 }
 
 function onDrop(source, target) {
+  const colorMoving = game.turn();
   const move = game.move({ from: source, to: target, promotion: 'q' });
   if (move === null) return 'snapback';
-  if (exploreMode) {
-    // Just play and re-analyze
-    updateMovesPlayed();
-    setTimeout(() => board.position(game.fen()), 50);
-    analyzePosition(game.fen(), 12);
-    return;
-  }
-  return checkUserMove(move);
+  lastMoveBy = colorMoving;
+  undoneStack = []; // clear redo when a fresh move is made
+
+  // Show informational feedback (never reject)
+  showUserMoveFeedback(move, colorMoving);
+  updateMovesPlayed();
+  updateProgress();
+  setTimeout(() => board.position(game.fen()), 50);
+  // Schedule next step
+  setTimeout(advance, 800);
 }
 
 function onSnapEnd() { board.position(game.fen()); }
 
 function normalize(san) { return san.replace(/[+#!?]/g, ''); }
 
-function checkUserMove(move) {
+function showUserMoveFeedback(move, colorMoving) {
   const top1 = pvs[1], top2 = pvs[2], top3 = pvs[3];
   const playedNorm = normalize(move.san);
+  const isUserColor = colorMoving === userColor;
 
-  let result = null;
-  if (top1 && normalize(top1.san) === playedNorm) result = { rank: 1, pv: top1, type: 'top1' };
-  else if (top2 && normalize(top2.san) === playedNorm && Math.abs(top2.raw - top1.raw) <= toleranceCp) result = { rank: 2, pv: top2, type: 'alt' };
-  else if (top3 && normalize(top3.san) === playedNorm && Math.abs(top3.raw - top1.raw) <= toleranceCp) result = { rank: 3, pv: top3, type: 'alt' };
+  if (isUserColor) userMovesCount++;
 
-  // Check if user move is in top 3 but outside tolerance
-  const inTop3 = [top1, top2, top3].some(pv => pv && normalize(pv.san) === playedNorm);
+  if (!top1) {
+    const fb = document.getElementById('feedback');
+    fb.className = 'panel feedback info';
+    fb.innerHTML = `<div class="feedback-title info">${move.san} joué</div><div class="why">Engine pas encore prêt pour cette position. Pas de comparaison disponible.</div>`;
+    return;
+  }
+
+  let rank = null;
+  if (normalize(top1.san) === playedNorm) rank = 1;
+  else if (top2 && normalize(top2.san) === playedNorm) rank = 2;
+  else if (top3 && normalize(top3.san) === playedNorm) rank = 3;
 
   highlightPlayedMove(move.san);
+  const fb = document.getElementById('feedback');
+  const colorLabel = colorMoving === 'w' ? 'BLANCS' : 'NOIRS';
 
-  if (result) {
-    drillUserMovesPlayed++;
-    if (result.type === 'top1') {
-      stats.top1++;
-      showAccept(`✓ TOP 1 (${formatEval(result.pv)})`, move.san, result.pv, top1);
-    } else {
-      stats.alt++;
-      showAccept(`✓ Top ${result.rank} - alternative acceptable (${formatEval(result.pv)})`, move.san, result.pv, top1);
-    }
-    updateStats();
-    setTimeout(advance, 1000);
-  } else if (inTop3) {
-    // In top 3 but eval is too far from top1
-    drillUserMovesPlayed++;
-    stats.alt++;
-    showAcceptMarginal(move.san, top1);
-    updateStats();
-    setTimeout(advance, 1000);
+  if (rank === 1) {
+    if (isUserColor) stats.top1++;
+    fb.className = 'panel feedback success';
+    fb.innerHTML = `<div class="feedback-title ok">✓ TOP 1 - ${move.san} (${formatEval(top1)})</div><div class="why">${colorLabel} : exactement le coup que Stockfish recommande.</div>`;
+  } else if (rank) {
+    if (isUserColor) stats.alt++;
+    const pv = rank === 2 ? top2 : top3;
+    const withinTol = Math.abs(pv.raw - top1.raw) <= toleranceCp;
+    fb.className = 'panel feedback ' + (withinTol ? 'success' : 'warn');
+    fb.innerHTML = `<div class="feedback-title ${withinTol ? 'ok' : 'warn'}">${withinTol ? '✓' : '⚠'} Rank ${rank} - ${move.san} (${formatEval(pv)})</div><div class="why">${colorLabel} : top 1 engine = <strong>${top1.san}</strong> (${formatEval(top1)}). ${withinTol ? 'Dans la tolérance.' : 'Écart de ' + Math.abs(pv.raw - top1.raw) + 'cp - sub-optimal.'}</div>`;
   } else {
-    // Not in top 3 - reject
-    stats.ko++;
-    showReject(move.san, top1);
-    updateStats();
-    game.undo();
-    setTimeout(() => board.position(game.fen()), 300);
-    return 'snapback';
+    if (isUserColor) stats.outside++;
+    fb.className = 'panel feedback error';
+    fb.innerHTML = `<div class="feedback-title ko">⚠ ${move.san} - hors top 3</div><div class="why">${colorLabel} : top 1 engine = <strong>${top1.san}</strong> (${formatEval(top1)}). Ton coup n'est pas dans le top 3 de Stockfish. (Coup accepté, on continue.)</div>`;
+  }
+  updateStats();
+}
+
+function goBack() {
+  if (game.history().length <= (currentLine ? currentLine.setup.length : 0)) return; // don't undo setup
+  const move = game.undo();
+  if (move) {
+    undoneStack.push(move);
+    if (move.color === userColor) userMovesCount = Math.max(0, userMovesCount - 1);
+    // Reset lastMoveBy from current history
+    const hist = game.history({ verbose: true });
+    lastMoveBy = hist.length > 0 ? hist[hist.length - 1].color : null;
+    board.position(game.fen());
+    updateMovesPlayed();
+    updateProgress();
+    analyzePosition(game.fen(), 12);
+    const fb = document.getElementById('feedback');
+    fb.className = 'panel feedback info';
+    fb.innerHTML = `<div class="label">Retour en arrière</div><div style="font-size:13px;color:var(--muted);">Coup ${move.san} annulé. Joue ou avance avec → pour rejouer.</div>`;
   }
 }
 
-function showAccept(title, playedSan, pv, top1) {
-  const fb = document.getElementById('feedback');
-  fb.className = 'panel feedback success';
-  const evalNote = pv.san !== top1.san
-    ? `Top 1 engine : <strong>${top1.san}</strong> (${formatEval(top1)}). Ton coup est dans la tolérance.`
-    : `C'est exactement le coup que Stockfish recommande.`;
-  fb.innerHTML = `
-    <div class="feedback-title ok">${title}</div>
-    <div class="why">Tu as joué <strong>${playedSan}</strong>. ${evalNote}</div>
-  `;
-}
-
-function showAcceptMarginal(playedSan, top1) {
-  const fb = document.getElementById('feedback');
-  fb.className = 'panel feedback warn';
-  fb.innerHTML = `
-    <div class="feedback-title warn">⚠ ${playedSan} - dans top 3 mais hors tolérance</div>
-    <div class="why">Top 1 engine : <strong>${top1.san}</strong> (${formatEval(top1)}). Ton coup est dans le top 3 mais l'écart est >${toleranceCp}cp. On accepte mais c'est sub-optimal.</div>
-  `;
-}
-
-function showReject(playedSan, top1) {
-  const fb = document.getElementById('feedback');
-  fb.className = 'panel feedback error';
-  fb.innerHTML = `
-    <div class="feedback-title ko">✗ ${playedSan} - pas dans top 3 engine</div>
-    <div class="why">Top 1 Stockfish : <strong>${top1.san}</strong> (${formatEval(top1)}). Regarde le panneau Stockfish pour les 3 meilleurs. Réessaie.</div>
-  `;
-}
-
-function finishLine() {
-  stats.lines_done++;
-  exploreMode = true;
-  const fb = document.getElementById('feedback');
-  fb.className = 'panel feedback done';
-  const planHtml = currentLine.plan ? `
-    <div class="plan-block">
-      <div class="label">PLAN à partir d'ici</div>
-      <div class="text">${currentLine.plan}</div>
-    </div>
-  ` : '';
-  fb.innerHTML = `
-    <div class="feedback-title done">✓ Ligne complétée - mode EXPLORATION activé</div>
-    <div class="why">Tu peux maintenant bouger n'importe quelle pièce (blanche OU noire) librement. Stockfish ré-analyse à chaque coup. Clique "Ligne suivante" pour passer à autre chose.</div>
-    ${planHtml}
-  `;
-  updateProgress();
-  updateStats();
-  // Keep engine running so user can explore
-  analyzePosition(game.fen(), 14);
+function goForward() {
+  if (undoneStack.length === 0) return;
+  const move = undoneStack.pop();
+  const replayed = game.move(move.san);
+  if (replayed) {
+    lastMoveBy = replayed.color;
+    if (replayed.color === userColor) userMovesCount++;
+    board.position(game.fen());
+    updateMovesPlayed();
+    updateProgress();
+    analyzePosition(game.fen(), 12);
+    const fb = document.getElementById('feedback');
+    fb.className = 'panel feedback info';
+    fb.innerHTML = `<div class="label">Avance</div><div style="font-size:13px;color:var(--muted);">Coup ${replayed.san} rejoué.</div>`;
+  }
 }
 
 function updateMovesPlayed() {
@@ -517,19 +507,31 @@ function updateMovesPlayed() {
 }
 
 function updateProgress() {
-  const pct = drillTotalMoves > 0 ? (drillUserMovesPlayed / drillTotalMoves) * 100 : 0;
+  // Show % of plies played beyond setup
+  const setupLen = currentLine ? currentLine.setup.length : 0;
+  const histLen = game ? game.history().length : 0;
+  const beyondSetup = Math.max(0, histLen - setupLen);
+  const pct = Math.min(100, (beyondSetup / 12) * 100); // 12 plies = "full" arbitrarily
   document.getElementById('progress').style.width = pct + '%';
 }
 
 function updateStats() {
   document.getElementById('stat-top1').textContent = stats.top1;
   document.getElementById('stat-alt').textContent = stats.alt;
-  document.getElementById('stat-ko').textContent = stats.ko;
+  document.getElementById('stat-ko').textContent = stats.outside;
   document.getElementById('stat-lines').textContent = stats.lines_done;
 }
 
-document.getElementById('btn-next').addEventListener('click', nextLine);
+document.getElementById('btn-next').addEventListener('click', () => { stats.lines_done++; updateStats(); nextLine(); });
 document.getElementById('btn-restart').addEventListener('click', startLine);
+document.getElementById('btn-back').addEventListener('click', goBack);
+document.getElementById('btn-forward').addEventListener('click', goForward);
+
+document.addEventListener('keydown', (e) => {
+  if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+  if (e.key === 'ArrowLeft') { e.preventDefault(); goBack(); }
+  if (e.key === 'ArrowRight') { e.preventDefault(); goForward(); }
+});
 
 initEngine();
 loadRepertoire();
