@@ -265,8 +265,8 @@
 <footer class="bottom">
   <div class="stats">
     <div class="stat"><div class="stat-v" id="stat-top1">0</div><div class="stat-l">Top 1</div></div>
-    <div class="stat"><div class="stat-v" id="stat-alt">0</div><div class="stat-l">Alt</div></div>
-    <div class="stat"><div class="stat-v" id="stat-out">0</div><div class="stat-l">Hors T3</div></div>
+    <div class="stat"><div class="stat-v" id="stat-alt">0</div><div class="stat-l">Retries OK</div></div>
+    <div class="stat"><div class="stat-v" id="stat-out">0</div><div class="stat-l">Essais ratés</div></div>
     <div class="stat"><div class="stat-v" id="stat-lines">0</div><div class="stat-l">Lignes</div></div>
   </div>
   <div class="vdiv"></div>
@@ -282,13 +282,15 @@
 // --- State ---
 let lines = [], toleranceCp = 30, activeFilter = 'all';
 let currentLine = null, board = null, game = null;
-let stats = { top1: 0, alt: 0, outside: 0, lines_done: 0 };
+let stats = { top1: 0, retries: 0, outside: 0, lines_done: 0 };
 let userColor = 'w';
 let lastMoveBy = null;
 let undoneStack = [];
 let userMovesCount = 0;
 let drillTotalMoves = 5;
 let drillCompleted = false;
+let revealedRanks = new Set(); // which engine ranks (1-3) are revealed for current position
+let wrongAttempts = 0;  // count of wrong attempts on current position
 
 // Engine
 let stockfish = null, engineReady = false;
@@ -346,6 +348,8 @@ function analyzePosition(fen, targetDepth) {
   pvs = {};
   engineDepth = 0;
   engineDone = false;
+  revealedRanks.clear();
+  wrongAttempts = 0;
   if (!engineReady || !stockfish) return;
   stockfish.postMessage('stop');
   stockfish.postMessage('position fen ' + fen);
@@ -383,12 +387,18 @@ function renderEngine() {
   const list = [1, 2, 3].map(n => pvs[n]).filter(Boolean);
   if (list.length === 0) return;
   const lastNorm = lastPlayedSan ? lastPlayedSan.replace(/[+#!?]/g, '') : null;
+  // During drill: hide SANs unless rank is in revealedRanks (or drillCompleted)
+  const showAll = drillCompleted;
   const html = list.map((pv, i) => {
+    const rank = i + 1;
     const evalCls = pv.raw > 0 ? 'plus' : (pv.raw < 0 ? 'minus' : '');
     const isPlayed = lastNorm && pv.san.replace(/[+#!?]/g, '') === lastNorm;
+    const revealed = showAll || revealedRanks.has(rank);
+    const moveDisplay = revealed ? pv.san : '???';
+    const moveStyle = revealed ? '' : 'color:var(--muted);letter-spacing:0.15em;';
     return `<div class="engine-row ${isPlayed ? 'played' : ''}">
-      <div class="engine-rank">${i + 1}</div>
-      <div class="engine-move">${pv.san}</div>
+      <div class="engine-rank">${rank}</div>
+      <div class="engine-move" style="${moveStyle}">${moveDisplay}</div>
       <div class="engine-eval ${evalCls}">${formatEval(pv)}</div>
     </div>`;
   }).join('');
@@ -529,73 +539,115 @@ function playOpponentMove() {
   undoneStack = [];
   board.position(game.fen(), true);
   updateHistory();
-  // Show opponent move briefly in last-move (informational)
-  setLastMove('info', `Adversaire : ${moveObj.san}`, `Coup top engine pour les ${colorMoving === 'w' ? 'blancs' : 'noirs'} (${formatEval(top)}). À toi maintenant.`);
+  // Do NOT overwrite last-move feedback - it should persist showing user's last result
   setTimeout(advance, 700);
 }
 
 function onDragStart(source, piece) {
   const turn = game.turn();
   if ((turn === 'w' && piece.search(/^b/) !== -1) || (turn === 'b' && piece.search(/^w/) !== -1)) return false;
+  if (drillCompleted) return; // free exploration after drill
+  // Drill mode: only allow user's color and require engine ready
+  if (turn !== userColor) return false;
+  if (!pvs[1] || engineDepth < 10) {
+    setLastMove('info', 'Stockfish analyse...', 'Attends que l\'engine finisse l\'analyse de la position (≈1s).');
+    return false;
+  }
 }
 
 function onDrop(source, target) {
   const colorMoving = game.turn();
   const move = game.move({ from: source, to: target, promotion: 'q' });
   if (move === null) return 'snapback';
-  lastMoveBy = colorMoving;
-  undoneStack = [];
+
+  // Post-drill: free exploration, no validation
+  if (drillCompleted) {
+    lastMoveBy = colorMoving;
+    undoneStack = [];
+    lastPlayedSan = move.san;
+    updateHistory();
+    updateProgress();
+    setLastMove('info', `${move.san}`, `Exploration - Stockfish ré-analyse la position.`);
+    setTimeout(() => board.position(game.fen()), 50);
+    setTimeout(() => analyzePosition(game.fen(), 14), 100);
+    return;
+  }
+
+  // Drill mode: must be TOP 1
+  const top1 = pvs[1];
+  if (!top1) {
+    game.undo();
+    setLastMove('info', 'Engine pas prêt', 'Attends un instant.');
+    setTimeout(() => board.position(game.fen()), 100);
+    return 'snapback';
+  }
+
+  const playedNorm = normalize(move.san);
+  const isTop1 = normalize(top1.san) === playedNorm;
+
+  if (isTop1) {
+    // Correct - accept, reveal, advance
+    revealedRanks.add(1);
+    lastMoveBy = colorMoving;
+    undoneStack = [];
+    lastPlayedSan = move.san;
+    userMovesCount++;
+    if (wrongAttempts === 0) stats.top1++; else stats.retries++;
+    updateStats();
+    setLastMove('top1',
+      `✓ TOP 1 · ${move.san} (${formatEval(top1)})`,
+      wrongAttempts === 0
+        ? `Exactement le coup que Stockfish recommande. ${userMovesCount}/${drillTotalMoves} coups joués.`
+        : `Trouvé après ${wrongAttempts} essai${wrongAttempts > 1 ? 's' : ''}. ${userMovesCount}/${drillTotalMoves} coups joués.`);
+    updateHistory();
+    updateProgress();
+    renderEngine();
+    setTimeout(() => board.position(game.fen()), 50);
+    setTimeout(advance, 1100);
+    return;
+  }
+
+  // Wrong - compute drop, reveal rank if in top 2-3, snapback
+  let triedRank = null;
+  let drop = null;
+  if (pvs[2] && normalize(pvs[2].san) === playedNorm) {
+    triedRank = 2; drop = top1.raw - pvs[2].raw;
+  } else if (pvs[3] && normalize(pvs[3].san) === playedNorm) {
+    triedRank = 3; drop = top1.raw - pvs[3].raw;
+  }
+
+  let hint;
+  if (drop === null) {
+    hint = `<strong>Hors top 3 engine.</strong> Drop important - probablement >50cp. Cherche un coup plus précis.`;
+  } else if (drop >= 200) {
+    hint = `<strong>Drop ${drop}cp</strong> - tu perds l'équivalent d'une pièce mineure.`;
+  } else if (drop >= 100) {
+    hint = `<strong>Drop ${drop}cp</strong> - tu perds l'équivalent d'un pion solide.`;
+  } else if (drop >= 50) {
+    hint = `<strong>Drop ${drop}cp</strong> - dégradation sensible.`;
+  } else if (drop >= 30) {
+    hint = `<strong>Drop ${drop}cp</strong> - sub-optimal, tu peux mieux.`;
+  } else {
+    hint = `<strong>Drop ${drop}cp seulement</strong> - quasi équivalent au top 1 mais l'engine préfère un autre coup.`;
+  }
+
+  if (triedRank) revealedRanks.add(triedRank);
+  wrongAttempts++;
+  stats.outside++;
+  updateStats();
   lastPlayedSan = move.san;
-  evaluateUserMove(move, colorMoving);
-  updateHistory();
-  updateProgress();
-  setTimeout(() => board.position(game.fen()), 50);
-  setTimeout(advance, 1200);
+  setLastMove('out',
+    `✗ ${move.san} - pas le top 1 (essai ${wrongAttempts})`,
+    `${hint}<br><br><em>Réessaie. Le top 1 reste caché jusqu'à ce que tu le trouves.</em>`);
+  renderEngine();
+  game.undo();
+  setTimeout(() => board.position(game.fen()), 300);
+  return 'snapback';
 }
 
 function onSnapEnd() { board.position(game.fen()); }
 
 function normalize(san) { return san.replace(/[+#!?]/g, ''); }
-
-function evaluateUserMove(move, colorMoving) {
-  const top1 = pvs[1], top2 = pvs[2], top3 = pvs[3];
-  const playedNorm = normalize(move.san);
-  const isUserColor = colorMoving === userColor;
-  if (isUserColor) userMovesCount++;
-
-  if (!top1) {
-    setLastMove('info', `${move.san}`, `Engine pas encore prêt. Pas de comparaison disponible pour cette position.`);
-    renderEngine();
-    return;
-  }
-
-  let rank = null;
-  if (normalize(top1.san) === playedNorm) rank = 1;
-  else if (top2 && normalize(top2.san) === playedNorm) rank = 2;
-  else if (top3 && normalize(top3.san) === playedNorm) rank = 3;
-
-  const colorLabel = colorMoving === 'w' ? 'Blancs' : 'Noirs';
-
-  if (rank === 1) {
-    if (isUserColor) stats.top1++;
-    setLastMove('top1', `✓ TOP 1 · ${move.san} (${formatEval(top1)})`, `${colorLabel} : exactement le coup que Stockfish recommande.`);
-  } else if (rank) {
-    const pv = rank === 2 ? top2 : top3;
-    const gap = Math.abs(pv.raw - top1.raw);
-    const within = gap <= toleranceCp;
-    if (isUserColor) stats.alt++;
-    setLastMove(within ? 'top1' : 'alt',
-      `${within ? '✓' : '⚠'} Rank ${rank} · ${move.san} (${formatEval(pv)})`,
-      `${colorLabel} : top 1 engine = <strong>${top1.san}</strong> (${formatEval(top1)}). ${within ? `Écart ${gap}cp - dans la tolérance.` : `Écart ${gap}cp - sub-optimal.`}`);
-  } else {
-    if (isUserColor) stats.outside++;
-    setLastMove('out',
-      `⚠ Hors top 3 · ${move.san}`,
-      `${colorLabel} : top 1 engine = <strong>${top1.san}</strong> (${formatEval(top1)}). Top 2: <strong>${top2 ? top2.san : '-'}</strong>, Top 3: <strong>${top3 ? top3.san : '-'}</strong>. (Coup accepté, on continue.)`);
-  }
-  updateStats();
-  renderEngine();
-}
 
 function setLastMove(state, title, detail) {
   const panel = document.getElementById('last-move-panel');
@@ -668,7 +720,7 @@ function updateProgress() {
 
 function updateStats() {
   document.getElementById('stat-top1').textContent = stats.top1;
-  document.getElementById('stat-alt').textContent = stats.alt;
+  document.getElementById('stat-alt').textContent = stats.retries;
   document.getElementById('stat-out').textContent = stats.outside;
   document.getElementById('stat-lines').textContent = stats.lines_done;
 }
