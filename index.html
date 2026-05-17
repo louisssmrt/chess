@@ -128,6 +128,7 @@ let currentLine = null, board = null, game = null;
 let drillUserMovesPlayed = 0, drillTotalMoves = 5;
 let stats = { top1: 0, alt: 0, ko: 0, lines_done: 0 };
 let userColor = 'w';
+let exploreMode = false;
 
 // Engine
 let stockfish = null, engineReady = false;
@@ -210,9 +211,10 @@ function uciToSan(uci, fen) {
 }
 
 function formatEval(pv) {
-  if (pv.type === 'mate') return '#' + pv.score;
-  const v = (pv.score / 100).toFixed(2);
-  return (pv.score >= 0 ? '+' : '') + v;
+  // Display eval from side-to-move (user) perspective so rank 1 always has highest score
+  if (pv.type === 'mate') return '#' + pv.raw;
+  const v = (pv.raw / 100).toFixed(2);
+  return (pv.raw >= 0 ? '+' : '') + v;
 }
 
 function setEngineStatus(s) { document.getElementById('engine-status').textContent = s; }
@@ -221,7 +223,7 @@ function updateEnginePanel() {
   const list = [1, 2, 3].map(n => pvs[n]).filter(Boolean);
   if (list.length === 0) return;
   const html = list.map((pv, i) => {
-    const evalCls = pv.score > 0 ? 'plus' : (pv.score < 0 ? 'minus' : '');
+    const evalCls = pv.raw > 0 ? 'plus' : (pv.raw < 0 ? 'minus' : '');
     return `<div class="engine-line">
       <div class="engine-rank">${i + 1}.</div>
       <div class="engine-move">${pv.san}</div>
@@ -287,6 +289,7 @@ function nextLine() {
 function startLine() {
   drillUserMovesPlayed = 0;
   drillTotalMoves = currentLine.drill_moves || 5;
+  exploreMode = false;
   game = new Chess();
   for (const m of currentLine.setup) game.move(m);
 
@@ -376,6 +379,12 @@ function playOpponentMove() {
 }
 
 function onDragStart(source, piece) {
+  // Allow free movement in explore mode (after line completes)
+  if (exploreMode) {
+    const turn = game.turn();
+    if ((turn === 'w' && piece.search(/^b/) !== -1) || (turn === 'b' && piece.search(/^w/) !== -1)) return false;
+    return true;
+  }
   if (drillUserMovesPlayed >= drillTotalMoves) return false;
   const turn = game.turn();
   if (turn !== userColor) return false;
@@ -389,6 +398,13 @@ function onDragStart(source, piece) {
 function onDrop(source, target) {
   const move = game.move({ from: source, to: target, promotion: 'q' });
   if (move === null) return 'snapback';
+  if (exploreMode) {
+    // Just play and re-analyze
+    updateMovesPlayed();
+    setTimeout(() => board.position(game.fen()), 50);
+    analyzePosition(game.fen(), 12);
+    return;
+  }
   return checkUserMove(move);
 }
 
@@ -471,8 +487,7 @@ function showReject(playedSan, top1) {
 
 function finishLine() {
   stats.lines_done++;
-  setEngineStatus('Ligne complétée.');
-  document.getElementById('engine-lines').innerHTML = '<div style="color:var(--muted);font-size:12px">Plus de coup à analyser.</div>';
+  exploreMode = true;
   const fb = document.getElementById('feedback');
   fb.className = 'panel feedback done';
   const planHtml = currentLine.plan ? `
@@ -482,12 +497,14 @@ function finishLine() {
     </div>
   ` : '';
   fb.innerHTML = `
-    <div class="feedback-title done">✓ Ligne complétée ! ${drillUserMovesPlayed}/${drillTotalMoves} coups joués</div>
-    <div class="why">Tu as drillé ${drillUserMovesPlayed} positions en mode engine-driven.</div>
+    <div class="feedback-title done">✓ Ligne complétée - mode EXPLORATION activé</div>
+    <div class="why">Tu peux maintenant bouger n'importe quelle pièce (blanche OU noire) librement. Stockfish ré-analyse à chaque coup. Clique "Ligne suivante" pour passer à autre chose.</div>
     ${planHtml}
   `;
   updateProgress();
   updateStats();
+  // Keep engine running so user can explore
+  analyzePosition(game.fen(), 14);
 }
 
 function updateMovesPlayed() {
