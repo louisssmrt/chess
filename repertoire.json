@@ -1,0 +1,317 @@
+{
+  "lines": [
+
+    {
+      "id": "scotch-philidor",
+      "opening": "Scotch",
+      "label": "vs Philidor (3...d6) + plan complet",
+      "color": "white",
+      "priority": "CRITIQUE - 0% sur 4 parties",
+      "intro": "Tu joues 4.Bc4 et tu développes naturellement avec un objectif : pression sur f7.",
+      "moves": [
+        { "san": "e4" }, { "san": "e5" },
+        { "san": "Nf3" }, { "san": "Nc6" },
+        { "san": "d4" }, { "san": "d6" },
+        { "san": "Bc4", "user": true, "alts": ["dxe5"], "why": "Tu vises f7 (le point faible du noir). Évite 4.dxe5 qui échange les dames et mène au nul facile." },
+        { "san": "Nf6" },
+        { "san": "Nc3", "user": true, "why": "Tu développes le cavalier vers le centre et tu protèges e4. C'est le développement le plus naturel." },
+        { "san": "Bg4" },
+        { "san": "h3", "user": true, "alts": ["Be3"], "why": "Tu chasses le fou. S'il prend Bxf3, tu reprends avec Qxf3 et la dame est bien placée pour viser f7. S'il recule Bh5, tu joues g4 plus tard si tu veux." },
+        { "san": "Bh5" },
+        { "san": "Nxe5", "user": true, "why": "Tu prends le pion ! Le fou en h5 ne défend plus e5 et le pion d6 n'a plus de défenseur après dxe5 dxe5 Qxd8+ Kxd8. Tu sors un pion sain." }
+      ]
+    },
+
+    {
+      "id": "scotch-mieses",
+      "opening": "Scotch",
+      "label": "Ligne principale Mieses (4...Nf6)",
+      "color": "white",
+      "intro": "La ligne théorique principale du Scotch. Tu échanges les cavaliers et tu pousses e5 pour gagner du temps.",
+      "moves": [
+        { "san": "e4" }, { "san": "e5" },
+        { "san": "Nf3" }, { "san": "Nc6" },
+        { "san": "d4", "user": true, "why": "Le Scotch ! Tu attaques le centre direct." },
+        { "san": "exd4" },
+        { "san": "Nxd4", "user": true, "why": "Reprise standard. Cavalier centralisé. JAMAIS Qxd4 (Nc6 gagne un tempo)." },
+        { "san": "Nf6" },
+        { "san": "Nxc6", "user": true, "why": "Tu échanges en c6 pour préparer 6.e5. C'est la ligne Mieses." },
+        { "san": "bxc6" },
+        { "san": "e5", "user": true, "why": "Tu chasses le cavalier f6 et tu prends de l'espace au centre." },
+        { "san": "Qe7" },
+        { "san": "Qe2", "user": true, "why": "Tu offres l'échange des dames. Mémo : Qe7 → Qe2. Tu stabilises et tu prépares un développement rapide." },
+        { "san": "Nd5" },
+        { "san": "c4", "user": true, "why": "Tu chasses encore le cavalier. Il doit aller en b6, b4 ou f4. Tu gagnes du tempo et du centre." }
+      ]
+    },
+
+    {
+      "id": "scotch-classical",
+      "opening": "Scotch",
+      "label": "Classical (4...Bc5)",
+      "color": "white",
+      "intro": "Le noir développe son fou en attaquant ton cavalier. Tu défends avec Be3.",
+      "moves": [
+        { "san": "e4" }, { "san": "e5" },
+        { "san": "Nf3" }, { "san": "Nc6" },
+        { "san": "d4", "user": true, "why": "Scotch !" },
+        { "san": "exd4" },
+        { "san": "Nxd4", "user": true, "why": "Cavalier centralisé." },
+        { "san": "Bc5" },
+        { "san": "Be3", "user": true, "alts": ["Nxc6", "Nb3"], "why": "Tu défends ton cavalier en attaquant son fou (ils sont sur la même diagonale). C'est plus solide que Nb3 qui recule passivement." },
+        { "san": "Qf6" },
+        { "san": "c3", "user": true, "why": "Tu prépares Nc3 sans clouage et tu interdis Nb4. La dame en f6 sera repoussée plus tard." },
+        { "san": "Nge7" },
+        { "san": "Nd2", "user": true, "why": "Le cavalier b1 va en d2 (pas Nc3 : le pion c3 bloque la case). De d2 il pourra rejoindre f3 ou e4 selon la suite. Tu prépares Qf3, O-O et la position est saine." }
+      ]
+    },
+
+    {
+      "id": "scotch-qh4-trap",
+      "opening": "Scotch",
+      "label": "Piège : 4...Qh4 (sortie de dame amateur)",
+      "color": "white",
+      "intro": "Beaucoup de joueurs <1500 sortent la dame en h4 pour faire peur. Tu connais la réfutation : Nf5.",
+      "moves": [
+        { "san": "e4" }, { "san": "e5" },
+        { "san": "Nf3" }, { "san": "Nc6" },
+        { "san": "d4", "user": true, "why": "Scotch." },
+        { "san": "exd4" },
+        { "san": "Nxd4", "user": true, "why": "Cavalier centralisé." },
+        { "san": "Qh4" },
+        { "san": "Nf5", "user": true, "why": "TRIPLE menace : la dame en h4, le pion g7, le pion c7 avec fourchette potentielle. JAMAIS Nc3 ici (tu laisserais Qxe4+). La dame doit reculer en lâchant tout." },
+        { "san": "Qd8" },
+        { "san": "Nc3", "user": true, "why": "Maintenant tu développes tranquille. Tu as gagné 3-4 tempos sur la dame baladeuse." }
+      ]
+    },
+
+    {
+      "id": "scotch-nf6-rare",
+      "opening": "Scotch",
+      "label": "3...Nf6 (rare, le noir laisse la tension)",
+      "color": "white",
+      "intro": "Le noir refuse de prendre en d4. Tu pousses d5 pour chasser le cavalier c6 et gagner l'espace.",
+      "moves": [
+        { "san": "e4" }, { "san": "e5" },
+        { "san": "Nf3" }, { "san": "Nc6" },
+        { "san": "d4", "user": true, "why": "Scotch." },
+        { "san": "Nf6" },
+        { "san": "d5", "user": true, "alts": ["dxe5"], "why": "Tu pousses d5 pour gagner du tempo en chassant Nc6 et tu prends de l'espace." },
+        { "san": "Ne7" },
+        { "san": "Nxe5", "user": true, "why": "Tu gagnes le pion e5 (il n'est plus défendu après Ne7)." }
+      ]
+    },
+
+    {
+      "id": "carokann-exchange",
+      "opening": "Caro-Kann",
+      "label": "Exchange : 3.exd5 cxd5 4.Bd3",
+      "color": "black",
+      "priority": "FAIBLESSE - 25% sur 4 parties",
+      "intro": "Variante calme. Tu développes naturellement vers une position symétrique légèrement en faveur des blancs mais très jouable.",
+      "moves": [
+        { "san": "e4" }, { "san": "c6", "user": true, "why": "Caro-Kann." },
+        { "san": "d4" }, { "san": "d5", "user": true, "why": "Tu prends le centre direct. Évite e6 d'office (tu jouerais français à l'envers)." },
+        { "san": "exd5" }, { "san": "cxd5", "user": true, "why": "Reprise naturelle, ouvre la colonne c pour ta tour." },
+        { "san": "Bd3" },
+        { "san": "Nc6", "user": true, "alts": ["Nf6"], "why": "Tu sors le cavalier sur sa case naturelle. Il attaque déjà d4 indirectement." },
+        { "san": "c3" },
+        { "san": "Nf6", "user": true, "why": "Développement classique. Tu prépares Bg4 ou Bf5 + e6 ensuite." },
+        { "san": "Bf4" },
+        { "san": "Bg4", "user": true, "alts": ["Bf5"], "why": "Tu sors le fou avant e6 (sinon il serait enfermé). Tu attaques le cavalier f3 et tu prépares e6 confortable." }
+      ]
+    },
+
+    {
+      "id": "carokann-panov",
+      "opening": "Caro-Kann",
+      "label": "Panov : 3.exd5 cxd5 4.c4",
+      "color": "black",
+      "intro": "Variante agressive. Les blancs veulent isoler ton pion d5. Tu développes activement et tu acceptes l'isolé.",
+      "moves": [
+        { "san": "e4" }, { "san": "c6", "user": true, "why": "Caro-Kann." },
+        { "san": "d4" }, { "san": "d5", "user": true, "why": "Centre direct." },
+        { "san": "exd5" }, { "san": "cxd5", "user": true, "why": "Reprise pion c." },
+        { "san": "c4" },
+        { "san": "Nf6", "user": true, "why": "Tu développes et tu refuses de prendre c4 (4...dxc4 5.Bxc4 te ferait perdre tempo). Tu acceptes l'isolation potentielle de d5." },
+        { "san": "Nc3" },
+        { "san": "e6", "user": true, "why": "Tu défends d5. Tu prépares Bb4 (clouage) ou Be7 selon la position." }
+      ]
+    },
+
+    {
+      "id": "carokann-advance-nf3",
+      "opening": "Caro-Kann",
+      "label": "Advance : 3.e5 Bf5 4.Nf3 (calme)",
+      "color": "black",
+      "intro": "Variante d'avance, ligne calme. Ton fou sort à l'extérieur AVANT que tu joues e6 (vs Française : ton fou est libre).",
+      "moves": [
+        { "san": "e4" }, { "san": "c6", "user": true, "why": "Caro-Kann." },
+        { "san": "d4" }, { "san": "d5", "user": true, "why": "Centre." },
+        { "san": "e5" },
+        { "san": "Bf5", "user": true, "alts": ["c5"], "why": "LE coup-clé du Caro-Kann. Tu sors le fou AVANT e6. Sinon ton fou reste enfermé comme un fou de française." },
+        { "san": "Nf3" },
+        { "san": "e6", "user": true, "why": "Maintenant tu peux fermer la chaîne. Ton fou de cases blanches est déjà sorti, parfait." },
+        { "san": "Be2" },
+        { "san": "Nd7", "user": true, "why": "Tu développes vers le centre. Le cavalier va en e7 ou f6 ensuite." }
+      ]
+    },
+
+    {
+      "id": "carokann-advance-h4",
+      "opening": "Caro-Kann",
+      "label": "Advance : 3.e5 Bf5 4.h4 (Tal, agressif)",
+      "color": "black",
+      "intro": "Les blancs veulent chasser ton fou avec g4. Tu joues h6 IMMÉDIATEMENT pour empêcher g5.",
+      "moves": [
+        { "san": "e4" }, { "san": "c6", "user": true, "why": "Caro-Kann." },
+        { "san": "d4" }, { "san": "d5", "user": true, "why": "Centre." },
+        { "san": "e5" }, { "san": "Bf5", "user": true, "why": "Fou avant e6." },
+        { "san": "h4" },
+        { "san": "h6", "user": true, "why": "OBLIGATOIRE. Si tu laisses passer 5.g4 sans h6, ton fou est enfermé. h6 empêche g5." },
+        { "san": "g4" },
+        { "san": "Bd7", "user": true, "alts": ["Bh7"], "why": "Tu recules le fou en sécurité. De Bd7 il pourra revenir en e8 ou se développer plus tard. Bh7 est aussi jouable mais plus passif." }
+      ]
+    },
+
+    {
+      "id": "carokann-classical",
+      "opening": "Caro-Kann",
+      "label": "Classical : 3.Nc3 dxe4 4.Nxe4 Bf5",
+      "color": "black",
+      "intro": "La variante classique du Caro-Kann. Tu sors le fou à l'extérieur (réflexe) et tu joues calmement.",
+      "moves": [
+        { "san": "e4" }, { "san": "c6", "user": true, "why": "Caro-Kann." },
+        { "san": "d4" }, { "san": "d5", "user": true, "why": "Centre." },
+        { "san": "Nc3" },
+        { "san": "dxe4", "user": true, "why": "Tu prends pour vider la tension. Si tu laisses, les blancs ont un meilleur centre." },
+        { "san": "Nxe4" },
+        { "san": "Bf5", "user": true, "alts": ["Nf6", "Nd7"], "why": "Tu sors le fou à l'extérieur AVANT e6. C'est ton réflexe Caro-Kann. Le cavalier e4 doit bouger." },
+        { "san": "Ng3" },
+        { "san": "Bg6", "user": true, "why": "Le fou recule sur g6 (pas en h7, trop passif). Tu prépares e6 + Nd7 + Ngf6 ensuite." }
+      ]
+    },
+
+    {
+      "id": "carokann-fantasy",
+      "opening": "Caro-Kann",
+      "label": "Fantasy : 3.f3 (tricky)",
+      "color": "black",
+      "intro": "Variante surprise. La réponse principale est dxe4 puis e5 pour casser le centre blanc.",
+      "moves": [
+        { "san": "e4" }, { "san": "c6", "user": true, "why": "Caro-Kann." },
+        { "san": "d4" }, { "san": "d5", "user": true, "why": "Centre." },
+        { "san": "f3" },
+        { "san": "dxe4", "user": true, "alts": ["e6"], "why": "Tu prends. Si les blancs reprennent fxe4, tu casseras leur centre avec e5 ensuite." },
+        { "san": "fxe4" },
+        { "san": "e5", "user": true, "why": "Tu attaques le centre. Si 5.dxe5, tu joues Qxd1+ avec position égale. Si 5.Nf3, tu joues exd4." }
+      ]
+    },
+
+    {
+      "id": "anti-petroff",
+      "opening": "Autres défenses (blancs)",
+      "label": "Petroff : 2...Nf6",
+      "color": "white",
+      "intro": "Le noir copie ton coup. Tu prends le pion et tu joues la théorie standard.",
+      "moves": [
+        { "san": "e4" }, { "san": "e5" },
+        { "san": "Nf3" }, { "san": "Nf6" },
+        { "san": "Nxe5", "user": true, "why": "Tu prends. Si le noir reprend direct (Nxe4??), tu joues Qe2 et tu gagnes." },
+        { "san": "d6" },
+        { "san": "Nf3", "user": true, "why": "Tu recules le cavalier. Important : ne PAS jouer Nxf7?? (Kxf7 et tu as juste perdu un cavalier)." },
+        { "san": "Nxe4" },
+        { "san": "d4", "user": true, "why": "Tu joues d4 pour ouvrir le jeu. Théorie principale, tu auras une légère pression au centre." }
+      ]
+    },
+
+    {
+      "id": "anti-scandinavian",
+      "opening": "Autres défenses (blancs)",
+      "label": "Scandinave : 1...d5",
+      "color": "white",
+      "priority": "RENCONTRÉ - tu as perdu en avril",
+      "intro": "Tu prends le pion et tu gagnes des tempos en attaquant la dame.",
+      "moves": [
+        { "san": "e4" }, { "san": "d5" },
+        { "san": "exd5", "user": true, "why": "Tu prends." },
+        { "san": "Qxd5" },
+        { "san": "Nc3", "user": true, "why": "Tu développes en attaquant la dame. Elle doit bouger (Qa5, Qd6, Qd8). Tu gagnes un tempo." },
+        { "san": "Qa5" },
+        { "san": "d4", "user": true, "why": "Tu construis le centre. Tu joueras ensuite Nf3, Bc4/Bd2." },
+        { "san": "Nf6" },
+        { "san": "Nf3", "user": true, "why": "Développement standard. Position confortable pour les blancs." }
+      ]
+    },
+
+    {
+      "id": "smith-morra",
+      "opening": "Autres défenses (blancs)",
+      "label": "Smith-Morra Gambit : 1...c5 (ton ouverture habituelle)",
+      "color": "white",
+      "priority": "RENCONTRÉ - tu as perdu sur cette ligne le 16 mai",
+      "intro": "Tu sacrifies un pion pour le développement rapide et la pression sur la colonne d et la diagonale a2-g8.",
+      "moves": [
+        { "san": "e4" }, { "san": "c5" },
+        { "san": "d4", "user": true, "why": "Tu pousses le pion central. Préparation du gambit." },
+        { "san": "cxd4" },
+        { "san": "c3", "user": true, "why": "Tu offres le pion. Le noir va probablement prendre." },
+        { "san": "dxc3" },
+        { "san": "Nxc3", "user": true, "why": "Tu reprends avec le cavalier (PAS Bxc3 ni Qxc3). Tu développes et tu vises e4 + colonne d." },
+        { "san": "e6" },
+        { "san": "Nf3", "user": true, "why": "Développement standard. Tu prépares Bc4 au coup suivant." },
+        { "san": "d6" },
+        { "san": "Bc4", "user": true, "why": "TON COUP CRITIQUE. C'est ici que tu as perdu le 16 mai. Tu cibles f7 et la diagonale a2-g8. Suite : O-O, Qe2, Rd1." }
+      ]
+    },
+
+    {
+      "id": "anti-french",
+      "opening": "Autres défenses (blancs)",
+      "label": "Française : 1...e6",
+      "color": "white",
+      "intro": "Tu construis le centre et tu joues simple. À 1233 Elo, pas besoin de connaître la théorie pointue.",
+      "moves": [
+        { "san": "e4" }, { "san": "e6" },
+        { "san": "d4", "user": true, "why": "Tu prends le centre." },
+        { "san": "d5" },
+        { "san": "Nc3", "user": true, "alts": ["e5", "Nd2"], "why": "Tu développes en gardant la tension. Si tu veux du calme tu peux jouer e5 (Advance French) ou Nd2 (Tarrasch)." },
+        { "san": "Nf6" },
+        { "san": "e5", "user": true, "why": "Tu pousses pour chasser le cavalier. Variante Classical Steinitz." }
+      ]
+    },
+
+    {
+      "id": "anti-pirc",
+      "opening": "Autres défenses (blancs)",
+      "label": "Pirc/Modern : 1...d6 ou 1...g6",
+      "color": "white",
+      "intro": "Le noir te laisse occuper le centre. Tu en profites.",
+      "moves": [
+        { "san": "e4" }, { "san": "d6" },
+        { "san": "d4", "user": true, "why": "Centre." },
+        { "san": "Nf6" },
+        { "san": "Nc3", "user": true, "why": "Développement." },
+        { "san": "g6" },
+        { "san": "Be3", "user": true, "alts": ["f3", "Nf3"], "why": "Plan attaque sur le roi : Be3, Qd2, f3, O-O-O, h4-h5 - c'est le système 150 attack, simple et brutal contre Pirc." }
+      ]
+    },
+
+    {
+      "id": "anti-alekhine",
+      "opening": "Autres défenses (blancs)",
+      "label": "Alekhine : 1...Nf6",
+      "color": "white",
+      "intro": "Le noir provoque tes pions. Tu acceptes et tu gagnes de l'espace.",
+      "moves": [
+        { "san": "e4" }, { "san": "Nf6" },
+        { "san": "e5", "user": true, "why": "Tu chasses le cavalier. Il ira en d5." },
+        { "san": "Nd5" },
+        { "san": "d4", "user": true, "why": "Centre encore plus large." },
+        { "san": "d6" },
+        { "san": "c4", "user": true, "why": "Tu repousses encore le cavalier (Nb6). Tu as 4 pions au centre. Variante des Quatre Pions, mais à 1233 tu joues juste Nf3 + Be2 derrière et tu écrases." }
+      ]
+    }
+
+  ]
+}

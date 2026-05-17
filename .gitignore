@@ -1,0 +1,11 @@
+node_modules/
+package-lock.json
+package.json
+
+# Données personnelles (parties + analyses)
+data/
+reports/
+MEMORY.md
+
+# Brouillons
+openings/

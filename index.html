@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<title>Chess Drill - Louis</title>
+<link rel="stylesheet" href="https://unpkg.com/@chrisoakman/chessboardjs@1.0.0/dist/chessboard-1.0.0.min.css">
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chess.js@0.10.3/chess.min.js"></script>
+<script src="https://unpkg.com/@chrisoakman/chessboardjs@1.0.0/dist/chessboard-1.0.0.min.js"></script>
+<style>
+  :root {
+    --bg: #1a1a1a;
+    --panel: #242424;
+    --border: #333;
+    --text: #e8e8e8;
+    --muted: #999;
+    --accent: #5cb85c;
+    --error: #d9534f;
+    --warn: #f0ad4e;
+    --info: #5bc0de;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    padding: 20px;
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  }
+  .wrap {
+    max-width: 1100px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: 1fr 400px;
+    gap: 24px;
+  }
+  @media (max-width: 900px) {
+    .wrap { grid-template-columns: 1fr; }
+  }
+  h1 { font-size: 22px; margin: 0 0 8px; }
+  .subtitle { color: var(--muted); font-size: 13px; margin-bottom: 16px; }
+  #board { width: 100%; max-width: 500px; }
+  .panel {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 16px;
+    margin-bottom: 12px;
+  }
+  .label { font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; }
+  .opening { font-size: 16px; font-weight: 600; margin-bottom: 4px; }
+  .moves-played { font-family: "SF Mono", Consolas, monospace; font-size: 13px; color: var(--text); line-height: 1.6; word-spacing: 4px; }
+  .move-current { background: rgba(92, 184, 92, 0.25); padding: 1px 4px; border-radius: 3px; }
+  .priority { color: var(--warn); font-size: 12px; margin-top: 6px; font-weight: 500; }
+  .feedback { min-height: 100px; }
+  .feedback.success { border-color: var(--accent); }
+  .feedback.error { border-color: var(--error); }
+  .feedback.info { border-color: var(--info); }
+  .feedback-title { font-weight: 600; margin-bottom: 6px; font-size: 15px; }
+  .feedback-title.ok { color: var(--accent); }
+  .feedback-title.ko { color: var(--error); }
+  .feedback-title.info { color: var(--info); }
+  .feedback-title.done { color: var(--accent); }
+  .why { color: var(--muted); font-size: 13px; line-height: 1.5; }
+  button {
+    background: var(--accent);
+    color: white;
+    border: none;
+    padding: 10px 16px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+  }
+  button:hover { filter: brightness(1.1); }
+  button:disabled { opacity: 0.4; cursor: not-allowed; }
+  button.secondary {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    color: var(--text);
+  }
+  .controls { display: flex; gap: 8px; margin-top: 12px; flex-wrap: wrap; }
+  .stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+    text-align: center;
+  }
+  .stat-value { font-size: 24px; font-weight: 600; }
+  .stat-label { font-size: 11px; color: var(--muted); text-transform: uppercase; }
+  .filter { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 8px; }
+  .chip {
+    padding: 6px 12px;
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    font-size: 12px;
+    cursor: pointer;
+    background: var(--panel);
+    color: var(--muted);
+  }
+  .chip.active { background: var(--accent); color: white; border-color: var(--accent); }
+  .hint { font-size: 11px; color: var(--muted); margin-top: 8px; }
+  .progress-bar {
+    height: 4px;
+    background: var(--border);
+    border-radius: 2px;
+    overflow: hidden;
+    margin-top: 8px;
+  }
+  .progress-fill {
+    height: 100%;
+    background: var(--accent);
+    transition: width 0.3s;
+  }
+  .alt-badge {
+    display: inline-block;
+    padding: 2px 6px;
+    border-radius: 4px;
+    background: rgba(240, 173, 78, 0.2);
+    color: var(--warn);
+    font-size: 11px;
+    margin-left: 6px;
+  }
+  .turn-indicator {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 4px;
+    background: var(--info);
+    color: white;
+    font-size: 11px;
+    margin-left: 8px;
+    font-weight: 600;
+  }
+  .turn-indicator.black { background: #333; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div>
+    <h1>Chess Drill <span style="color:var(--muted);font-weight:400;font-size:14px">- louisssmrt</span></h1>
+    <div class="subtitle" id="subtitle">Charge le répertoire...</div>
+    <div id="board"></div>
+    <div class="hint">Joue ton coup en drag&drop. Bon coup → l'adversaire répond automatiquement et tu joues la suite.</div>
+  </div>
+
+  <div>
+    <div class="panel">
+      <div class="label">Ligne en cours <span class="turn-indicator" id="color-indicator">BLANCS</span></div>
+      <div class="opening" id="opening-name">-</div>
+      <div class="moves-played" id="moves-played">-</div>
+      <div class="priority" id="priority"></div>
+      <div class="progress-bar"><div class="progress-fill" id="progress" style="width:0%"></div></div>
+    </div>
+
+    <div class="panel feedback" id="feedback">
+      <div class="label">À toi de jouer</div>
+      <div style="font-size: 14px; color: var(--muted);">Trouve le bon coup.</div>
+    </div>
+
+    <div class="controls">
+      <button id="btn-next">Ligne suivante</button>
+      <button class="secondary" id="btn-show">Montrer le coup</button>
+      <button class="secondary" id="btn-restart">Recommencer</button>
+    </div>
+
+    <div class="panel" style="margin-top:12px">
+      <div class="label">Session</div>
+      <div class="stats">
+        <div><div class="stat-value" id="stat-ok">0</div><div class="stat-label">Bon</div></div>
+        <div><div class="stat-value" id="stat-ko">0</div><div class="stat-label">Faux</div></div>
+        <div><div class="stat-value" id="stat-lines">0</div><div class="stat-label">Lignes finies</div></div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="label">Filtrer</div>
+      <div class="filter" id="filter-chips"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+let lines = [];
+let activeFilter = 'all';
+let currentLine = null;
+let currentMoveIdx = 0;     // index dans currentLine.moves
+let board = null;
+let game = null;
+let stats = { ok: 0, ko: 0, lines_done: 0 };
+let attemptedWrongOnce = false;  // pour ne pas compter ok si déjà loupé
+
+async function loadRepertoire() {
+  try {
+    const res = await fetch('repertoire.json?v=' + Date.now());
+    const data = await res.json();
+    lines = data.lines;
+    document.getElementById('subtitle').textContent = lines.length + ' lignes chargées';
+    buildFilters();
+    nextLine();
+  } catch (e) {
+    document.getElementById('subtitle').textContent = 'Erreur : ' + e.message;
+  }
+}
+
+function buildFilters() {
+  const openings = ['all', ...new Set(lines.map(l => l.opening))];
+  const html = openings.map(o => `<div class="chip ${o === 'all' ? 'active' : ''}" data-filter="${o}">${o === 'all' ? 'Tout' : o}</div>`).join('');
+  document.getElementById('filter-chips').innerHTML = html;
+  document.querySelectorAll('.chip').forEach(c => {
+    c.addEventListener('click', () => {
+      document.querySelectorAll('.chip').forEach(x => x.classList.remove('active'));
+      c.classList.add('active');
+      activeFilter = c.dataset.filter;
+      nextLine();
+    });
+  });
+}
+
+function filteredLines() {
+  if (activeFilter === 'all') return lines;
+  return lines.filter(l => l.opening === activeFilter);
+}
+
+function nextLine() {
+  const pool = filteredLines();
+  if (pool.length === 0) return;
+  currentLine = pool[Math.floor(Math.random() * pool.length)];
+  startLine();
+}
+
+function startLine() {
+  currentMoveIdx = 0;
+  game = new Chess();
+  const orientation = currentLine.color === 'white' ? 'white' : 'black';
+
+  if (board) board.destroy();
+  board = Chessboard('board', {
+    position: game.fen(),
+    orientation: orientation,
+    draggable: true,
+    pieceTheme: 'https://cdn.jsdelivr.net/gh/oakmac/chessboardjs@1.0.0/website/img/chesspieces/wikipedia/{piece}.png',
+    onDragStart: onDragStart,
+    onDrop: onDrop,
+    onSnapEnd: onSnapEnd,
+  });
+
+  document.getElementById('color-indicator').textContent = currentLine.color === 'white' ? 'BLANCS' : 'NOIRS';
+  document.getElementById('color-indicator').className = 'turn-indicator ' + (currentLine.color === 'white' ? '' : 'black');
+  document.getElementById('opening-name').textContent = currentLine.opening + ' - ' + currentLine.label;
+  document.getElementById('priority').textContent = currentLine.priority || '';
+  document.getElementById('priority').style.display = currentLine.priority ? 'block' : 'none';
+
+  showIntroFeedback();
+  advanceAutoMoves();
+}
+
+function showIntroFeedback() {
+  const fb = document.getElementById('feedback');
+  fb.className = 'panel feedback info';
+  fb.innerHTML = `
+    <div class="label">Intro</div>
+    <div class="feedback-title info">${currentLine.label}</div>
+    <div class="why">${currentLine.intro || 'Joue le bon coup quand c\'est à toi.'}</div>
+  `;
+}
+
+// Play all non-user moves until next user move or end of line
+function advanceAutoMoves() {
+  while (currentMoveIdx < currentLine.moves.length) {
+    const move = currentLine.moves[currentMoveIdx];
+    if (move.user) {
+      // Stop, wait for user input
+      updateUI();
+      if (currentMoveIdx === currentLine.moves.length - 1 && move.user) {
+        // last user move - keep going
+      }
+      return;
+    }
+    // Play this move automatically
+    const result = game.move(move.san);
+    if (!result) {
+      console.error('Invalid auto move:', move.san, 'at index', currentMoveIdx);
+      return;
+    }
+    currentMoveIdx++;
+  }
+  // No more user moves - line is finished
+  board.position(game.fen());
+  finishLine();
+}
+
+function finishLine() {
+  stats.lines_done++;
+  attemptedWrongOnce = false;
+  const fb = document.getElementById('feedback');
+  fb.className = 'panel feedback success';
+  fb.innerHTML = `
+    <div class="feedback-title done">Ligne complétée !</div>
+    <div class="why">Tu as joué toute la séquence. Clique sur "Ligne suivante" pour passer à autre chose, ou "Recommencer" pour refaire celle-ci.</div>
+  `;
+  updateProgress();
+  updateStats();
+}
+
+function updateUI() {
+  // Show board position after auto-played moves
+  setTimeout(() => board.position(game.fen(), true), 50);
+  updateMovesPlayed();
+  updateProgress();
+
+  const move = currentLine.moves[currentMoveIdx];
+  if (!move || !move.user) return;
+
+  const fb = document.getElementById('feedback');
+  fb.className = 'panel feedback';
+  const moveNum = Math.floor(currentMoveIdx / 2) + 1;
+  const sideStr = (currentMoveIdx % 2 === 0) ? 'BLANCS' : 'NOIRS';
+  fb.innerHTML = `
+    <div class="label">À toi - coup ${moveNum} ${sideStr}</div>
+    <div style="font-size: 14px; color: var(--muted);">Joue ton coup sur l'échiquier.</div>
+  `;
+}
+
+function updateMovesPlayed() {
+  const html = currentLine.moves.slice(0, currentMoveIdx).map((m, i) => {
+    const num = i % 2 === 0 ? `<span style="color:var(--muted)">${(i / 2) + 1}.</span>` : '';
+    return `${num} ${m.san}`;
+  }).join(' ');
+  document.getElementById('moves-played').innerHTML = html || '<span style="color:var(--muted)">(début de partie)</span>';
+}
+
+function updateProgress() {
+  const total = currentLine.moves.length;
+  const pct = (currentMoveIdx / total) * 100;
+  document.getElementById('progress').style.width = pct + '%';
+}
+
+function onDragStart(source, piece) {
+  if (currentMoveIdx >= currentLine.moves.length) return false;
+  const expectedMove = currentLine.moves[currentMoveIdx];
+  if (!expectedMove.user) return false;
+  // Only allow dragging pieces of the side to move
+  const turn = game.turn();
+  if ((turn === 'w' && piece.search(/^b/) !== -1) || (turn === 'b' && piece.search(/^w/) !== -1)) {
+    return false;
+  }
+}
+
+function onDrop(source, target) {
+  const move = game.move({ from: source, to: target, promotion: 'q' });
+  if (move === null) return 'snapback';
+  return checkMove(move);
+}
+
+function onSnapEnd() {
+  board.position(game.fen());
+}
+
+function normalize(san) {
+  return san.replace(/[+#!?]/g, '');
+}
+
+function checkMove(playedMove) {
+  const expected = currentLine.moves[currentMoveIdx];
+  const expectedSan = expected.san;
+  const alts = expected.alts || [];
+  const playedNorm = normalize(playedMove.san);
+  const expectedNorm = normalize(expectedSan);
+  const altsNorm = alts.map(a => normalize(a));
+
+  const fb = document.getElementById('feedback');
+
+  if (playedNorm === expectedNorm) {
+    // Correct move
+    if (!attemptedWrongOnce) stats.ok++;
+    attemptedWrongOnce = false;
+    fb.className = 'panel feedback success';
+    fb.innerHTML = `
+      <div class="feedback-title ok">✓ ${expectedSan} - bon coup !</div>
+      <div class="why">${expected.why || ''}</div>
+    `;
+    currentMoveIdx++;
+    updateStats();
+    setTimeout(advanceAutoMoves, 800);
+  } else if (altsNorm.includes(playedNorm)) {
+    // Acceptable alternative
+    if (!attemptedWrongOnce) stats.ok++;
+    attemptedWrongOnce = false;
+    fb.className = 'panel feedback success';
+    fb.innerHTML = `
+      <div class="feedback-title ok">✓ ${playedMove.san} <span class="alt-badge">alternative acceptable</span></div>
+      <div class="why">Le coup principal du répertoire est <strong>${expectedSan}</strong>. ${expected.why || ''}</div>
+    `;
+    currentMoveIdx++;
+    updateStats();
+    setTimeout(advanceAutoMoves, 800);
+  } else {
+    // Wrong move - undo and let retry
+    stats.ko++;
+    attemptedWrongOnce = true;
+    fb.className = 'panel feedback error';
+    fb.innerHTML = `
+      <div class="feedback-title ko">✗ Pas ${playedMove.san}</div>
+      <div class="why">Le bon coup est <strong>${expectedSan}</strong>. ${expected.why || ''}<br><br><em>Réessaie : joue ${expectedSan} sur l'échiquier.</em></div>
+    `;
+    game.undo();
+    updateStats();
+    setTimeout(() => board.position(game.fen()), 300);
+    return 'snapback';
+  }
+}
+
+function updateStats() {
+  document.getElementById('stat-ok').textContent = stats.ok;
+  document.getElementById('stat-ko').textContent = stats.ko;
+  document.getElementById('stat-lines').textContent = stats.lines_done;
+}
+
+document.getElementById('btn-next').addEventListener('click', nextLine);
+document.getElementById('btn-restart').addEventListener('click', startLine);
+document.getElementById('btn-show').addEventListener('click', () => {
+  if (currentMoveIdx >= currentLine.moves.length) return;
+  const expected = currentLine.moves[currentMoveIdx];
+  if (!expected || !expected.user) return;
+  const fb = document.getElementById('feedback');
+  fb.className = 'panel feedback info';
+  fb.innerHTML = `
+    <div class="feedback-title info">Coup attendu : ${expected.san}</div>
+    <div class="why">${expected.why || ''}<br><br><em>Joue ce coup pour continuer.</em></div>
+  `;
+});
+
+loadRepertoire();
+</script>
+</body>
+</html>
