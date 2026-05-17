@@ -255,6 +255,7 @@
       <div class="controls">
         <button id="btn-back" title="Flèche gauche">← Retour</button>
         <button id="btn-forward" title="Flèche droite">Avancer →</button>
+        <button id="btn-reveal" class="full">👁 Révéler les top coups</button>
         <button id="btn-next" class="primary full">Ligne suivante</button>
         <button id="btn-restart" class="full">Recommencer la ligne</button>
       </div>
@@ -387,8 +388,10 @@ function renderEngine() {
   const list = [1, 2, 3].map(n => pvs[n]).filter(Boolean);
   if (list.length === 0) return;
   const lastNorm = lastPlayedSan ? lastPlayedSan.replace(/[+#!?]/g, '') : null;
-  // During drill: hide SANs unless rank is in revealedRanks (or drillCompleted)
-  const showAll = drillCompleted;
+  // Hide SANs only when it's USER's turn to play in drill mode
+  // (show during opponent thinking and post-drill exploration)
+  const isUserTurn = game && game.turn() === userColor && !drillCompleted;
+  const showAll = !isUserTurn;
   const html = list.map((pv, i) => {
     const rank = i + 1;
     const evalCls = pv.raw > 0 ? 'plus' : (pv.raw < 0 ? 'minus' : '');
@@ -499,12 +502,10 @@ function advance() {
   if (turn === userColor) {
     analyzePosition(game.fen(), 12);
   } else {
-    if (lastMoveBy === userColor) {
-      analyzePosition(game.fen(), 12);
-      waitForEngine(10, playOpponentMove);
-    } else {
-      analyzePosition(game.fen(), 12);
-    }
+    // Drill mode: opponent ALWAYS auto-plays its top move
+    // (covers both line start and post-user-move cases)
+    analyzePosition(game.fen(), 12);
+    waitForEngine(10, playOpponentMove);
   }
 }
 
@@ -746,6 +747,17 @@ document.getElementById('btn-next').addEventListener('click', () => {
 document.getElementById('btn-restart').addEventListener('click', startLine);
 document.getElementById('btn-back').addEventListener('click', goBack);
 document.getElementById('btn-forward').addEventListener('click', goForward);
+document.getElementById('btn-reveal').addEventListener('click', () => {
+  if (!pvs[1]) {
+    setLastMove('info', 'Engine pas prêt', 'Attends que Stockfish ait analysé la position.');
+    return;
+  }
+  revealedRanks.add(1); revealedRanks.add(2); revealedRanks.add(3);
+  renderEngine();
+  setLastMove('info',
+    'Coups révélés',
+    `Top 1 = <strong>${pvs[1].san}</strong> (${formatEval(pvs[1])})${pvs[2] ? ', Top 2 = <strong>' + pvs[2].san + '</strong> (' + formatEval(pvs[2]) + ')' : ''}${pvs[3] ? ', Top 3 = <strong>' + pvs[3].san + '</strong> (' + formatEval(pvs[3]) + ')' : ''}.<br><br>Joue le top 1 pour avancer (ou tente quand même un autre coup si tu veux explorer).`);
+});
 
 document.addEventListener('keydown', (e) => {
   if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
