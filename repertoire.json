@@ -1,4 +1,5 @@
 {
+  "tolerance_cp": 30,
   "lines": [
 
     {
@@ -7,16 +8,10 @@
       "label": "vs Philidor (3...d6)",
       "color": "white",
       "priority": "CRITIQUE - 0% sur 4 parties",
-      "intro": "Le noir joue Philidor (3...d6). Engine veut d5 immédiatement pour kicker le cavalier et prendre l'espace au centre.",
-      "moves": [
-        { "san": "e4" }, { "san": "e5" },
-        { "san": "Nf3" }, { "san": "Nc6" },
-        { "san": "d4" }, { "san": "d6" },
-        { "san": "d5", "user": true, "alts": ["Bc4"], "why": "Engine top (+0.67). Tu pousses d5 immédiatement pour repousser Nc6 et gagner l'espace. Bc4 (développement positionnel) est jouable mais moins direct selon Stockfish." },
-        { "san": "Nce7" },
-        { "san": "Nc3", "user": true, "alts": ["Bd3"], "why": "Tu développes le cavalier vers le centre. Le cavalier noir en e7 est passif, tu prépares Bc4/Bd3 + O-O." }
-      ],
-      "plan": "Plan : Bc4 ou Bd3, O-O court, Re1, et tu joues sur ton avantage d'espace. Le cavalier noir Ne7 est mal placé. Idées long-terme : push c4 pour étendre le centre, ou f4 + f5 attaque kingside. Ne tente pas Nxe5 si black joue Bg4-Bh5 (cloue Nf3 sur Qd1)."
+      "setup": ["e4", "e5", "Nf3", "Nc6", "d4", "d6"],
+      "drill_moves": 5,
+      "intro": "Le noir joue Philidor (3...d6). Trouve le meilleur coup à chaque tour - Stockfish te valide en live.",
+      "plan": "Idées génériques anti-Philidor : d5 (kick le cavalier, gain d'espace), Bc4 ou Bd3 (développement actif), O-O court, Nc3, et long-terme attaque sur le centre/aile roi. Le noir manque d'espace - exploite-le."
     },
 
     {
@@ -24,23 +19,10 @@
       "opening": "Scotch",
       "label": "Ligne principale Mieses (4...Nf6)",
       "color": "white",
-      "intro": "Ligne théorique principale du Scotch. Tu échanges les cavaliers et tu pousses e5 pour gagner du temps.",
-      "moves": [
-        { "san": "e4" }, { "san": "e5" },
-        { "san": "Nf3" }, { "san": "Nc6" },
-        { "san": "d4", "user": true, "why": "Scotch ! Tu attaques le centre direct." },
-        { "san": "exd4" },
-        { "san": "Nxd4", "user": true, "why": "Reprise standard. JAMAIS Qxd4 (Nc6 gagne un tempo)." },
-        { "san": "Nf6" },
-        { "san": "Nxc6", "user": true, "alts": ["Nc3"], "why": "Tu échanges en c6 pour préparer e5 - c'est la ligne Mieses théorique. Stockfish préfère légèrement Nc3 (slow dev) mais Mieses est l'approche reconnue." },
-        { "san": "bxc6" },
-        { "san": "e5", "user": true, "alts": ["Nc3"], "why": "Tu chasses le cavalier f6 et tu prends de l'espace au centre. C'est le coup-clé de Mieses." },
-        { "san": "Qe7" },
-        { "san": "Qe2", "user": true, "why": "Tu offres l'échange des dames. Mémo : Qe7 → Qe2. Tu stabilises avant de développer." },
-        { "san": "Nd5" },
-        { "san": "c4", "user": true, "why": "Tu chasses encore le cavalier. Il doit aller en b6, b4 ou f4. Tempo gagné, centre élargi." }
-      ],
-      "plan": "Plan : Nc3, Be3 ou Bg5, O-O ou O-O-O. Tu vises l'attaque sur le roi noir resté au centre (black a perdu sa structure de pions sur la colonne c). Ne te précipite pas - le noir a peu de jeu actif, tu peux développer tranquille puis charger."
+      "setup": ["e4", "e5", "Nf3", "Nc6", "d4", "exd4", "Nxd4", "Nf6"],
+      "drill_moves": 5,
+      "intro": "Position théorique principale du Scotch après 4...Nf6. La ligne Mieses échange en c6 et pousse e5.",
+      "plan": "Idées : Nxc6 puis e5 (chasser Nf6, gain d'espace), développement Nc3/Be3/Qe2 selon les besoins. Le noir aura souvent pawn doubled c-file après Nxc6 bxc6 - tu joues contre cette structure. Roque opposé possible (O-O-O) pour une attaque kingside."
     },
 
     {
@@ -48,41 +30,21 @@
       "opening": "Scotch",
       "label": "Classical (4...Bc5)",
       "color": "white",
-      "intro": "Le noir développe son fou en attaquant ton cavalier. Tu défends avec Be3.",
-      "moves": [
-        { "san": "e4" }, { "san": "e5" },
-        { "san": "Nf3" }, { "san": "Nc6" },
-        { "san": "d4", "user": true, "why": "Scotch." },
-        { "san": "exd4" },
-        { "san": "Nxd4", "user": true, "why": "Cavalier centralisé." },
-        { "san": "Bc5" },
-        { "san": "Be3", "user": true, "alts": ["Nb3", "Nxc6"], "why": "Tu défends ton cavalier en attaquant son fou (même diagonale). Stockfish préfère Nb3 (recule mais évite l'échange) mais Be3 est ultra-jouable et plus thématique." },
-        { "san": "Qf6" },
-        { "san": "c3", "user": true, "why": "Tu prépares Nc3 sans clouage et tu interdis Nb4. La dame f6 sera repoussée plus tard." },
-        { "san": "Nge7" },
-        { "san": "Bc4", "user": true, "alts": ["Nd2"], "why": "Tu développes le fou f1 sur la diagonale a2-g8 (vise f7). Coup principal Stockfish (+0.27). Nd2 jouable mais bloque ce fou." }
-      ],
-      "plan": "Plan : O-O, Nd2 (rejoint f3 ou b3), Re1. Position symétrique avec un léger plus blanc. Idées : f4 pour attaquer le centre, ou b4 pour gagner espace sur le flanc dame. Si black joue O-O-O, attaque opposée féroce."
+      "setup": ["e4", "e5", "Nf3", "Nc6", "d4", "exd4", "Nxd4", "Bc5"],
+      "drill_moves": 5,
+      "intro": "Le noir développe son fou en attaquant ton cavalier. C'est la Scotch Classical.",
+      "plan": "Idées : Be3 (défend + attaque le fou), c3 puis Nd2-f3, Bc4 (diagonale a2-g8), O-O. Position riche en théorie - les engines préfèrent souvent Nb3 (recul) ou Be3 selon nuances. Long-terme attaque sur kingside avec f4 ou pression centrale."
     },
 
     {
       "id": "scotch-qh4-trap",
       "opening": "Scotch",
-      "label": "Piège : 4...Qh4 (sortie de dame amateur)",
+      "label": "4...Qh4 (sortie de dame amateur)",
       "color": "white",
-      "intro": "Beaucoup de joueurs <1500 sortent la dame en h4. Réfutation pratique : Nf5 (engine préfère Nc3 + accepter Qxe4+ mais Nf5 est plus simple à 1233 Elo).",
-      "moves": [
-        { "san": "e4" }, { "san": "e5" },
-        { "san": "Nf3" }, { "san": "Nc6" },
-        { "san": "d4", "user": true, "why": "Scotch." },
-        { "san": "exd4" },
-        { "san": "Nxd4", "user": true, "why": "Cavalier centralisé." },
-        { "san": "Qh4" },
-        { "san": "Nf5", "user": true, "alts": ["Nc3"], "why": "TRIPLE menace : dame en h4, pion g7, pion c7. Plus simple que Nc3 (qui demande de défendre e4 ensuite). La dame doit reculer en lâchant ses menaces." },
-        { "san": "Qd8" },
-        { "san": "Nc3", "user": true, "why": "Maintenant tu développes tranquille. Tu as gagné 3-4 tempos sur la dame baladeuse." }
-      ],
-      "plan": "Plan : Be3, Bc4 ou Bd3, O-O ou O-O-O. Tu as une avance de développement énorme - exploite-la avec une attaque rapide. Le roi noir est encore en e8 sans roque - prends-le à partie avec d5 ou f4 selon le développement noir."
+      "setup": ["e4", "e5", "Nf3", "Nc6", "d4", "exd4", "Nxd4", "Qh4"],
+      "drill_moves": 5,
+      "intro": "Le noir tente une sortie de dame agressive. Plusieurs réponses solides existent - trouve le top engine.",
+      "plan": "Idées : Nc3 (développement, accepter la perte du pion e4 contre tempo), Nf5 (attaque la dame + menaces), Nb5 (vise c7). La dame baladeuse en h4 te donne des tempos - exploite-les avec un développement rapide et exploite ton avance pour attaquer."
     },
 
     {
@@ -90,17 +52,10 @@
       "opening": "Scotch",
       "label": "3...Nf6 (rare, le noir laisse la tension)",
       "color": "white",
-      "intro": "Le noir refuse de prendre en d4. Stockfish préfère dxe5 (gagner pion direct) à d5, mais d5 reste agressif.",
-      "moves": [
-        { "san": "e4" }, { "san": "e5" },
-        { "san": "Nf3" }, { "san": "Nc6" },
-        { "san": "d4", "user": true, "why": "Scotch." },
-        { "san": "Nf6" },
-        { "san": "d5", "user": true, "alts": ["dxe5"], "why": "Tu pousses d5 pour chasser Nc6 et gagner l'espace. dxe5 (engine top +0.81) prend direct le pion - les deux sont bons. d5 est plus agressif positionnellement." },
-        { "san": "Ne7" },
-        { "san": "Nxe5", "user": true, "why": "Tu gagnes le pion e5 (plus défendu après Ne7 qui s'éloigne)." }
-      ],
-      "plan": "Plan : Nc3, Bc4, O-O. Tu es +1 pion + énorme centre. Convert. Si black tente d6 pour ouvrir, garde le pion en jouant Nf3 prudent."
+      "setup": ["e4", "e5", "Nf3", "Nc6", "d4", "Nf6"],
+      "drill_moves": 5,
+      "intro": "Le noir refuse de prendre en d4 et défend le centre. Plusieurs options pour les blancs.",
+      "plan": "Idées : dxe5 (gagne pion direct), d5 (kick Nc6 et gain espace), Bg5 (clouer Nf6 si tu veux complications). Après dxe5 le pion peut tomber selon les défenses noires - mais position blanc avantageuse type +0.5."
     },
 
     {
@@ -109,37 +64,21 @@
       "label": "Exchange : 3.exd5 cxd5 4.Bd3",
       "color": "black",
       "priority": "FAIBLESSE - 25% sur 4 parties",
-      "intro": "Variante calme. Tu développes naturellement vers une position symétrique légèrement +blanc mais très jouable.",
-      "moves": [
-        { "san": "e4" }, { "san": "c6", "user": true, "why": "Caro-Kann." },
-        { "san": "d4" }, { "san": "d5", "user": true, "why": "Centre direct. JAMAIS e6 d'abord (français à l'envers)." },
-        { "san": "exd5" }, { "san": "cxd5", "user": true, "why": "Reprise pion. Ouvre la colonne c pour ta tour." },
-        { "san": "Bd3" },
-        { "san": "Nc6", "user": true, "alts": ["Nf6"], "why": "Cavalier sur sa case naturelle. Engine préfère Nf6 légèrement, mais Nc6 est correct - les deux développent." },
-        { "san": "c3" },
-        { "san": "Nf6", "user": true, "alts": ["Qc7"], "why": "Développement classique. Prépare Bg4 ou Bf5 + e6 ensuite." },
-        { "san": "Bf4" },
-        { "san": "Bg4", "user": true, "alts": ["Bf5"], "why": "Tu sors le fou avant e6 (sinon enfermé). Attaque Nf3 + prépare e6 confortable." }
-      ],
-      "plan": "Plan : e6, Bd6 (ou Be7), O-O. Tu joues contre les pièces blanches actives. Long-terme : pousser b6 + Bb7 (fou actif), ou jouer la colonne c avec Rc8. Position symétrique - n'attaque pas comme une brute, joue solide et capitalise sur tes pièces actives."
+      "setup": ["e4", "c6", "d4", "d5", "exd5", "cxd5", "Bd3"],
+      "drill_moves": 5,
+      "intro": "Variante Exchange. À toi de développer le noir solidement.",
+      "plan": "Idées : Nc6/Nf6 (développement), Bg4/Bf5 (fou actif AVANT e6), e6 (fermer la chaîne), Bd6/Be7 puis O-O. Position symétrique +blanc léger mais très jouable. Long-terme : pousser b6+Bb7 ou jouer la colonne c. Ne te précipite pas - position de manoeuvre."
     },
 
     {
       "id": "carokann-panov",
       "opening": "Caro-Kann",
-      "label": "Panov : 3.exd5 cxd5 4.c4",
+      "label": "Panov-Botvinnik : 3.exd5 cxd5 4.c4",
       "color": "black",
-      "intro": "Variante agressive. Les blancs veulent isoler ton d5. Tu développes activement et acceptes l'isolé.",
-      "moves": [
-        { "san": "e4" }, { "san": "c6", "user": true, "why": "Caro-Kann." },
-        { "san": "d4" }, { "san": "d5", "user": true, "why": "Centre direct." },
-        { "san": "exd5" }, { "san": "cxd5", "user": true, "why": "Reprise pion c." },
-        { "san": "c4" },
-        { "san": "Nf6", "user": true, "why": "Tu refuses de prendre c4 (4...dxc4 perd tempo). Développement actif - accepte l'isolation potentielle de d5." },
-        { "san": "Nc3" },
-        { "san": "e6", "user": true, "alts": ["Nc6"], "why": "Tu défends d5 et tu prépares Bb4 (clouage) ou Be7. Engine préfère Nc6 légèrement (activation) - les deux sont jouables." }
-      ],
-      "plan": "Plan : Bb4 (clouer Nc3) + O-O + Nc6. Si black ouvre avec cxd5, le pion isolé d5 devient ta cible - blocade avec Nb6 ou attaque avec b6+Bb7. Plan classique IQP : pression sur d5, échange des pièces blanches actives."
+      "setup": ["e4", "c6", "d4", "d5", "exd5", "cxd5", "c4"],
+      "drill_moves": 5,
+      "intro": "Variante agressive Panov. Le blanc veut isoler ton d5 - défends activement.",
+      "plan": "Idées : Nf6 (refuse cxc4), e6 (défend d5), Bb4 (clouage de Nc3 si joué), Nc6 (active). Tu accepte souvent l'isolation de d5 - en échange tu as un fou actif et beaucoup de cases pour tes pièces. Plan : pression sur le pion d4 blanc, échanges des pièces blanches actives."
     },
 
     {
@@ -147,18 +86,10 @@
       "opening": "Caro-Kann",
       "label": "Advance : 3.e5 Bf5 4.Nf3 (calme)",
       "color": "black",
-      "intro": "Advance variante calme. Ton fou sort à l'extérieur AVANT e6 (réflexe Caro-Kann).",
-      "moves": [
-        { "san": "e4" }, { "san": "c6", "user": true, "why": "Caro-Kann." },
-        { "san": "d4" }, { "san": "d5", "user": true, "why": "Centre." },
-        { "san": "e5" },
-        { "san": "Bf5", "user": true, "alts": ["c5"], "why": "LE coup-clé du Caro-Kann. Fou avant e6. Sinon ton fou reste enfermé." },
-        { "san": "Nf3" },
-        { "san": "e6", "user": true, "why": "Maintenant fermable - ton fou est déjà out." },
-        { "san": "Be2" },
-        { "san": "Nd7", "user": true, "alts": ["c5", "Ne7"], "why": "Tu développes vers le centre. Engine préfère c5 (challenge direct du centre) - c'est plus actif mais aussi plus risqué. Nd7 = approche solide." }
-      ],
-      "plan": "Plan : Ne7 (vers f5/g6), O-O, c5 push si possible. Long-terme : tu joues sur l'aile dame (b6+a5 ou a6+b5). Le noir a un fou actif en f5 et une structure solide - c'est une des meilleures versions du Caro-Kann."
+      "setup": ["e4", "c6", "d4", "d5", "e5", "Bf5", "Nf3"],
+      "drill_moves": 5,
+      "intro": "Advance variante calme. Tu as déjà sorti le fou en f5 (réflexe Caro-Kann). À toi de continuer.",
+      "plan": "Idées : e6 (fermer la chaîne maintenant que le fou est out), Nd7 puis Ne7 (cavaliers vers f5/g6), c5 (challenger le centre), Qb6 (vise b2). Tu joues sur le flanc dame avec b5+a5 push. Tu as une excellente version du Caro-Kann."
     },
 
     {
@@ -166,17 +97,10 @@
       "opening": "Caro-Kann",
       "label": "Advance : 3.e5 Bf5 4.h4 (Tal, agressif)",
       "color": "black",
-      "intro": "Les blancs veulent chasser ton fou avec g4. Tu joues h6 IMMÉDIATEMENT.",
-      "moves": [
-        { "san": "e4" }, { "san": "c6", "user": true, "why": "Caro-Kann." },
-        { "san": "d4" }, { "san": "d5", "user": true, "why": "Centre." },
-        { "san": "e5" }, { "san": "Bf5", "user": true, "why": "Fou avant e6." },
-        { "san": "h4" },
-        { "san": "h6", "user": true, "alts": ["h5"], "why": "OBLIGATOIRE pour bloquer g4-g5. Engine préfère h5 (totalement bloque) mais h6 est la théorie classique - les deux sauvent le fou." },
-        { "san": "g4" },
-        { "san": "Bd7", "user": true, "alts": ["Be4", "Bh7"], "why": "Tu recules le fou en sécurité. De d7, retour possible en e8 ou b5 plus tard. Engine préfère Be4 (très actif mais risqué) - Bd7 est l'option pratique solide." }
-      ],
-      "plan": "Plan : c5 push, Nc6, Qb6 (vise b2). Position complexe avec attaque féroce des blancs sur kingside vs ton contre-jeu sur l'aile dame. Roque LONG (O-O-O) souvent - ne reste pas en e8."
+      "setup": ["e4", "c6", "d4", "d5", "e5", "Bf5", "h4"],
+      "drill_moves": 5,
+      "intro": "Le blanc veut chasser ton fou avec g4. Trouve les bonnes défenses.",
+      "plan": "Idées : h6 ou h5 (empêcher g5), Bd7/Be4 (sauver le fou de g4), Nc6, Qb6 (vise b2), c5 (contre-jeu). Position complexe avec attaque féroce blanche sur kingside vs ton contre-jeu sur l'aile dame. Roque LONG (O-O-O) souvent."
     },
 
     {
@@ -184,18 +108,10 @@
       "opening": "Caro-Kann",
       "label": "Classical : 3.Nc3 dxe4 4.Nxe4 Bf5",
       "color": "black",
-      "intro": "La variante classique. Tu sors le fou à l'extérieur (réflexe) et tu joues calmement.",
-      "moves": [
-        { "san": "e4" }, { "san": "c6", "user": true, "why": "Caro-Kann." },
-        { "san": "d4" }, { "san": "d5", "user": true, "why": "Centre." },
-        { "san": "Nc3" },
-        { "san": "dxe4", "user": true, "why": "Tu prends pour vider la tension." },
-        { "san": "Nxe4" },
-        { "san": "Bf5", "user": true, "alts": ["Nf6", "Nd7"], "why": "Fou à l'extérieur AVANT e6 (réflexe Caro-Kann). Le cavalier e4 doit bouger." },
-        { "san": "Ng3" },
-        { "san": "Bg6", "user": true, "why": "Recul en g6 (pas h7 = trop passif). Tu prépares e6 + Nd7 + Ngf6 ensuite." }
-      ],
-      "plan": "Plan : e6, Nd7, Ngf6, Be7 (ou Bd6), O-O. Position type 'Caro-Kann classical' : très solide, pas d'attaque immédiate. Tu joues sur les diagonales et tu vises long-terme c5 ou Qa5+ pour activer."
+      "setup": ["e4", "c6", "d4", "d5", "Nc3", "dxe4", "Nxe4", "Bf5"],
+      "drill_moves": 5,
+      "intro": "Classical avec fou en f5 (sorti AVANT e6 - réflexe). À toi de jouer le reste.",
+      "plan": "Idées : Bg6 (recul si Ng3), e6 (fermer chaîne), Nf6 ou Nd7 (développement), Be7/Bd6 (fou roi), O-O. Position type 'Caro-Kann classical' : très solide. Pas d'attaque immédiate - manoeuvre tranquille, vise long-terme c5 ou Qa5+."
     },
 
     {
@@ -203,16 +119,10 @@
       "opening": "Caro-Kann",
       "label": "Fantasy : 3.f3 (tricky)",
       "color": "black",
-      "intro": "Variante surprise. La réponse principale est dxe4 puis e5 pour casser le centre blanc.",
-      "moves": [
-        { "san": "e4" }, { "san": "c6", "user": true, "why": "Caro-Kann." },
-        { "san": "d4" }, { "san": "d5", "user": true, "why": "Centre." },
-        { "san": "f3" },
-        { "san": "dxe4", "user": true, "alts": ["e6", "Qb6"], "why": "Tu prends. Engine top en cache c'est Qb6 (attaque b2) - dxe4 reste théorique standard et plus simple. Les deux sont jouables." },
-        { "san": "fxe4" },
-        { "san": "e5", "user": true, "why": "Tu attaques le centre. Si 5.dxe5 Qxd1+ position égale. Si 5.Nf3, tu joues exd4." }
-      ],
-      "plan": "Plan : Nf6, Bc5 ou Bd6, O-O. Position dynamique - tu as cassé le centre blanc. Joue rapidement le développement et exploite la mauvaise position de la dame blanche (f3 a faibli la diagonale a7-g1)."
+      "setup": ["e4", "c6", "d4", "d5", "f3"],
+      "drill_moves": 5,
+      "intro": "Variante surprise Fantasy. Le blanc renforce le centre - tu dois le casser ou jouer solide.",
+      "plan": "Idées : dxe4 puis e5 (casser le centre), Qb6 (attaque b2, profite de la faiblesse créée par f3), e6 (jouer solide à la française). Position dynamique - f3 a affaibli la diagonale a7-g1 et la case e3. Exploite vite."
     },
 
     {
@@ -220,17 +130,10 @@
       "opening": "Autres défenses (blancs)",
       "label": "Petroff : 2...Nf6",
       "color": "white",
-      "intro": "Le noir copie ton coup. Tu prends le pion et tu joues la théorie standard.",
-      "moves": [
-        { "san": "e4" }, { "san": "e5" },
-        { "san": "Nf3" }, { "san": "Nf6" },
-        { "san": "Nxe5", "user": true, "why": "Tu prends. Si Nxe4?? (gourmandise), tu joues Qe2 et tu gagnes (la dame attaque Ne4 + clou indirect)." },
-        { "san": "d6" },
-        { "san": "Nf3", "user": true, "why": "Tu recules. CRITIQUE : NE PAS jouer Nxf7?? (Kxf7 = tu perds un cavalier pour 2 pions)." },
-        { "san": "Nxe4" },
-        { "san": "d4", "user": true, "why": "Tu ouvres pour la dame et tu vises le cavalier e4 + centre." }
-      ],
-      "plan": "Plan : Bd3 (attaque Ne4), O-O, c4. Position de léger avantage +0.30. Tu as un centre plus grand. Si le noir échange en c2-d4 etc., reste solide et joue contre les faiblesses qu'il va créer."
+      "setup": ["e4", "e5", "Nf3", "Nf6"],
+      "drill_moves": 5,
+      "intro": "Le noir joue Petroff. Le coup principal est Nxe5, mais piège : ne pas jouer Nxf7 plus tard.",
+      "plan": "Idées : Nxe5 puis Nf3 (retraite, JAMAIS Nxf7), d4, Bd3, O-O. Position de léger avantage +0.30 type. Le pion noir e4 (s'il prend en e4) sera attaqué - tu construis tranquille."
     },
 
     {
@@ -239,40 +142,22 @@
       "label": "Scandinave : 1...d5",
       "color": "white",
       "priority": "RENCONTRÉ - tu as perdu en avril",
-      "intro": "Tu prends le pion et tu gagnes des tempos en attaquant la dame.",
-      "moves": [
-        { "san": "e4" }, { "san": "d5" },
-        { "san": "exd5", "user": true, "why": "Tu prends." },
-        { "san": "Qxd5" },
-        { "san": "Nc3", "user": true, "why": "Tu développes en attaquant la dame. Elle doit bouger (Qa5, Qd6, Qd8). Tempo gagné." },
-        { "san": "Qa5" },
-        { "san": "d4", "user": true, "alts": ["Nf3"], "why": "Tu construis le centre. Stockfish préfère Nf3 d'abord (développement prioritaire) - d4 est le plan classique." },
-        { "san": "Nf6" },
-        { "san": "Nf3", "user": true, "why": "Développement standard. Position confortable pour les blancs." }
-      ],
-      "plan": "Plan : Bd2 (puis Bc4), O-O, attaque sur la dame Qa5 (Bc4 puis Bd2 menace Nd5/Nb5). Roque court ou long selon position. Le noir est en retard de développement - exploite vite avant qu'il rattrape."
+      "setup": ["e4", "d5"],
+      "drill_moves": 5,
+      "intro": "Scandinave - tu prends le pion et tu attaques la dame avec gain de tempo.",
+      "plan": "Idées : exd5 puis Nc3 (attaque Qxd5), d4 (centre), Nf3, Bc4, O-O ou O-O-O. Tu gagnes des tempos sur la dame baladeuse. Le noir est en retard de développement - presse-le vite avant qu'il rattrape."
     },
 
     {
       "id": "smith-morra",
       "opening": "Autres défenses (blancs)",
-      "label": "Smith-Morra Gambit : 1...c5",
+      "label": "Smith-Morra Gambit accepté",
       "color": "white",
       "priority": "RENCONTRÉ - tu as perdu sur cette ligne le 16 mai",
-      "intro": "Tu sacrifies un pion pour le développement rapide et la pression sur d + diagonale a2-g8. CHOIX DE TON RÉPERTOIRE (engine préfère Open Sicilian).",
-      "moves": [
-        { "san": "e4" }, { "san": "c5" },
-        { "san": "d4", "user": true, "why": "Tu pousses le pion central pour préparer c3 - choix du Smith-Morra." },
-        { "san": "cxd4" },
-        { "san": "c3", "user": true, "why": "Tu offres le pion. CHOIX de répertoire (engine préfère 3.Nf3 ou Qxd4)." },
-        { "san": "dxc3" },
-        { "san": "Nxc3", "user": true, "why": "Tu reprends avec le cavalier (PAS Bxc3 ni Qxc3). Tu développes et tu vises e4 + colonne d." },
-        { "san": "e6" },
-        { "san": "Nf3", "user": true, "why": "Développement standard. Tu prépares Bc4." },
-        { "san": "d6" },
-        { "san": "Bc4", "user": true, "why": "TON COUP CRITIQUE (où tu as perdu le 16 mai). Vise f7 + diagonale a2-g8. Suite : O-O, Qe2, Rd1." }
-      ],
-      "plan": "Plan : O-O, Qe2, Rd1 (occupe la colonne d), Bf4 ou Bg5 (active le fou). Tu vises l'attaque rapide avant que le noir consolide. Idées tactiques : Nd5 (sacrifie position), Bxe6 (sacrifice de fou), e5 (ouvre les lignes). Si tu n'attaques pas en 15-20 coups, le pion en moins se fait sentir."
+      "setup": ["e4", "c5", "d4", "cxd4", "c3", "dxc3", "Nxc3"],
+      "drill_moves": 5,
+      "intro": "Smith-Morra accepté - tu as sacrifié un pion. À toi de jouer ton attaque rapide. CHOIX DE TON RÉPERTOIRE.",
+      "plan": "Idées : Nf3, Bc4 (diagonale a2-g8 - là où tu as perdu le 16 mai), O-O, Qe2, Rd1, Bf4 ou Bg5. Tu vises l'attaque rapide avant que le noir consolide. Idées tactiques : Nd5 sacrifice, Bxe6, e5 ouvre lignes. Si tu n'attaques pas en 15-20 coups, le pion en moins se fait sentir."
     },
 
     {
@@ -280,16 +165,10 @@
       "opening": "Autres défenses (blancs)",
       "label": "Française : 1...e6",
       "color": "white",
-      "intro": "Tu construis le centre. À 1233 Elo, pas besoin de théorie pointue.",
-      "moves": [
-        { "san": "e4" }, { "san": "e6" },
-        { "san": "d4", "user": true, "why": "Tu prends le centre." },
-        { "san": "d5" },
-        { "san": "Nc3", "user": true, "alts": ["e5", "Nd2"], "why": "Tu développes en gardant la tension. Calme et standard. Alternatives : e5 (Advance) ou Nd2 (Tarrasch)." },
-        { "san": "Nf6" },
-        { "san": "e5", "user": true, "why": "Tu pousses pour chasser le cavalier - variante Classical Steinitz." }
-      ],
-      "plan": "Plan : f4 (sécurise le pion e5), Nf3, Be2, O-O. Tu as plus d'espace au centre. Cible : flanc roi avec g4-g5 attaque, OU étouffe le fou c8 du français qui reste enfermé. Si black s'ouvre avec c5, joue dxc5 et joue contre l'isolé."
+      "setup": ["e4", "e6"],
+      "drill_moves": 5,
+      "intro": "Française. Plusieurs systèmes possibles pour les blancs - laisse l'engine te montrer.",
+      "plan": "Idées : d4 (centre), Nc3 (Classical) ou Nd2 (Tarrasch) ou e5 (Advance) selon le goût. Tu joues sur l'espace + attaque kingside avec Qg4 ou Bd3+. Le fou c8 noir reste enfermé - exploite cette faiblesse à long-terme."
     },
 
     {
@@ -297,16 +176,10 @@
       "opening": "Autres défenses (blancs)",
       "label": "Pirc/Modern : 1...d6",
       "color": "white",
-      "intro": "Le noir te laisse le centre. Tu joues le 150 attack (Be3 + Qd2 + O-O-O + h4-h5).",
-      "moves": [
-        { "san": "e4" }, { "san": "d6" },
-        { "san": "d4", "user": true, "why": "Centre." },
-        { "san": "Nf6" },
-        { "san": "Nc3", "user": true, "alts": ["Bd3"], "why": "Développement standard. Engine préfère Bd3 légèrement mais Nc3 est canonique pour le 150 attack." },
-        { "san": "g6" },
-        { "san": "Be3", "user": true, "alts": ["f3", "Nf3"], "why": "Setup 150 attack : Be3 + Qd2 + O-O-O + h4-h5. Simple et brutal contre Pirc. Engine préfère Bd3 ou Nf3 mais Be3 est le système connu." }
-      ],
-      "plan": "Plan 150 attack : Qd2, O-O-O (roque long), h4-h5 (attaque la structure g6). Sacrifice typique sur h5 ou Bh6 si black fianchette. Tactique sur le roi noir - position très tranchante, ne joue pas passif sinon black s'organise."
+      "setup": ["e4", "d6"],
+      "drill_moves": 5,
+      "intro": "Pirc/Modern. Le noir te laisse le centre.",
+      "plan": "Idées : d4 (centre), Nc3 ou Bd3 (développement), Be3 (système 150 attack), Qd2, O-O-O, h4-h5 attaque féroce sur g6. Plan tranchant - sacrifie pièces sur h5 si nécessaire. Ne joue pas passif sinon black s'organise."
     },
 
     {
@@ -314,16 +187,10 @@
       "opening": "Autres défenses (blancs)",
       "label": "Alekhine : 1...Nf6",
       "color": "white",
-      "intro": "Le noir provoque tes pions. Tu acceptes et tu gagnes de l'espace.",
-      "moves": [
-        { "san": "e4" }, { "san": "Nf6" },
-        { "san": "e5", "user": true, "why": "Tu chasses le cavalier. Il ira en d5." },
-        { "san": "Nd5" },
-        { "san": "d4", "user": true, "why": "Centre encore plus large." },
-        { "san": "d6" },
-        { "san": "c4", "user": true, "why": "Tu repousses encore le cavalier (Nb6). Tu as 4 pions au centre - Variante des Quatre Pions." }
-      ],
-      "plan": "Plan : Nf3, Be2, O-O (simple). Le centre est énorme mais fragile - défends-le avec a3 + b3 si attaqué. Idée : pousser e6 (sacrifice de pion pour ouvrir) ou f4-f5 si tu peux. Évite les coups passifs - le centre doit servir à attaquer, pas juste à occuper."
+      "setup": ["e4", "Nf6"],
+      "drill_moves": 5,
+      "intro": "Alekhine - le noir provoque tes pions. Tu acceptes pour gagner de l'espace.",
+      "plan": "Idées : e5 (chasser le cavalier), d4 (centre), c4 (variante 4 pions, repousse encore), Nf3, Be2, O-O. Centre énorme mais fragile - défends avec a3+b3 si attaqué. Idée : pousser e6 (sacrifice) ou f4-f5 pour attaquer."
     }
 
   ]

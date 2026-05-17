@@ -9,16 +9,9 @@
 <script src="https://unpkg.com/@chrisoakman/chessboardjs@1.0.0/dist/chessboard-1.0.0.min.js"></script>
 <style>
   :root {
-    --bg: #1a1a1a;
-    --panel: #242424;
-    --border: #333;
-    --text: #e8e8e8;
-    --muted: #999;
-    --accent: #5cb85c;
-    --error: #d9534f;
-    --warn: #f0ad4e;
-    --info: #5bc0de;
-    --engine: #6c5ce7;
+    --bg: #1a1a1a; --panel: #242424; --border: #333; --text: #e8e8e8;
+    --muted: #999; --accent: #5cb85c; --error: #d9534f; --warn: #f0ad4e;
+    --info: #5bc0de; --engine: #6c5ce7;
   }
   * { box-sizing: border-box; }
   body { margin: 0; padding: 20px; background: var(--bg); color: var(--text); font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
@@ -36,11 +29,13 @@
   .feedback.success { border-color: var(--accent); }
   .feedback.error { border-color: var(--error); }
   .feedback.info { border-color: var(--info); }
+  .feedback.warn { border-color: var(--warn); }
   .feedback.done { border-color: var(--accent); }
   .feedback-title { font-weight: 600; margin-bottom: 6px; font-size: 15px; }
   .feedback-title.ok { color: var(--accent); }
   .feedback-title.ko { color: var(--error); }
   .feedback-title.info { color: var(--info); }
+  .feedback-title.warn { color: var(--warn); }
   .feedback-title.done { color: var(--accent); }
   .why { color: var(--muted); font-size: 13px; line-height: 1.5; }
   .plan-block { margin-top: 12px; padding-top: 12px; border-top: 1px dashed var(--border); }
@@ -50,23 +45,22 @@
   button:hover { filter: brightness(1.1); }
   button.secondary { background: var(--panel); border: 1px solid var(--border); color: var(--text); }
   .controls { display: flex; gap: 8px; margin-top: 12px; flex-wrap: wrap; }
-  .stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; text-align: center; }
-  .stat-value { font-size: 24px; font-weight: 600; }
-  .stat-label { font-size: 11px; color: var(--muted); text-transform: uppercase; }
+  .stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; text-align: center; }
+  .stat-value { font-size: 22px; font-weight: 600; }
+  .stat-label { font-size: 10px; color: var(--muted); text-transform: uppercase; }
   .filter { display: flex; gap: 8px; flex-wrap: wrap; }
   .chip { padding: 6px 12px; border: 1px solid var(--border); border-radius: 16px; font-size: 12px; cursor: pointer; background: var(--panel); color: var(--muted); }
   .chip.active { background: var(--accent); color: white; border-color: var(--accent); }
   .hint { font-size: 11px; color: var(--muted); margin-top: 8px; }
   .progress-bar { height: 4px; background: var(--border); border-radius: 2px; overflow: hidden; margin-top: 8px; }
   .progress-fill { height: 100%; background: var(--accent); transition: width 0.3s; }
-  .alt-badge { display: inline-block; padding: 2px 6px; border-radius: 4px; background: rgba(240, 173, 78, 0.2); color: var(--warn); font-size: 11px; margin-left: 6px; }
   .turn-indicator { display: inline-block; padding: 2px 8px; border-radius: 4px; background: var(--info); color: white; font-size: 11px; margin-left: 8px; font-weight: 600; }
   .turn-indicator.black { background: #333; }
   .engine-panel { border-color: var(--engine); }
   .engine-panel .label { color: var(--engine); }
   .engine-status { font-size: 11px; color: var(--muted); margin-bottom: 8px; }
   .engine-line { display: flex; align-items: center; padding: 6px 8px; border-radius: 4px; margin-bottom: 4px; background: rgba(108, 92, 231, 0.1); font-family: "SF Mono", Consolas, monospace; font-size: 13px; }
-  .engine-line.match { background: rgba(92, 184, 92, 0.2); }
+  .engine-line.played { background: rgba(92, 184, 92, 0.25); }
   .engine-rank { width: 24px; color: var(--muted); font-size: 11px; }
   .engine-move { flex: 1; font-weight: 600; }
   .engine-eval { color: var(--muted); font-size: 12px; }
@@ -77,15 +71,15 @@
 <body>
 <div class="wrap">
   <div>
-    <h1>Chess Drill <span style="color:var(--muted);font-weight:400;font-size:14px">- louisssmrt</span></h1>
-    <div class="subtitle" id="subtitle">Charge le répertoire et l'engine...</div>
+    <h1>Chess Drill <span style="color:var(--muted);font-weight:400;font-size:14px">- engine-driven</span></h1>
+    <div class="subtitle" id="subtitle">Chargement...</div>
     <div id="board"></div>
-    <div class="hint">Joue ton coup en drag&drop. Stockfish évalue chaque position - tu vois ses top 3 moves dans le panneau Engine.</div>
+    <div class="hint">Joue ton coup en drag&drop. Stockfish décide le top à chaque position - tu vois si tu matches.</div>
   </div>
 
   <div>
     <div class="panel">
-      <div class="label">Ligne en cours <span class="turn-indicator" id="color-indicator">BLANCS</span></div>
+      <div class="label">Ligne <span class="turn-indicator" id="color-indicator">BLANCS</span></div>
       <div class="opening" id="opening-name">-</div>
       <div class="moves-played" id="moves-played">-</div>
       <div class="priority" id="priority"></div>
@@ -94,29 +88,29 @@
 
     <div class="panel feedback" id="feedback">
       <div class="label">À toi de jouer</div>
-      <div style="font-size: 14px; color: var(--muted);">Trouve le bon coup.</div>
+      <div style="font-size: 14px; color: var(--muted);">Chargement.</div>
     </div>
 
     <div class="panel engine-panel">
-      <div class="label">Stockfish (live)</div>
+      <div class="label">Stockfish - top 3 moves de la position</div>
       <div class="engine-status" id="engine-status">Initialisation...</div>
       <div id="engine-lines">
-        <div style="color:var(--muted);font-size:12px">En attente de position.</div>
+        <div style="color:var(--muted);font-size:12px">En attente.</div>
       </div>
     </div>
 
     <div class="controls">
       <button id="btn-next">Ligne suivante</button>
-      <button class="secondary" id="btn-show">Montrer le coup</button>
       <button class="secondary" id="btn-restart">Recommencer</button>
     </div>
 
     <div class="panel" style="margin-top:12px">
       <div class="label">Session</div>
       <div class="stats">
-        <div><div class="stat-value" id="stat-ok">0</div><div class="stat-label">Bon</div></div>
+        <div><div class="stat-value" id="stat-top1">0</div><div class="stat-label">Top 1</div></div>
+        <div><div class="stat-value" id="stat-alt">0</div><div class="stat-label">Alt OK</div></div>
         <div><div class="stat-value" id="stat-ko">0</div><div class="stat-label">Faux</div></div>
-        <div><div class="stat-value" id="stat-lines">0</div><div class="stat-label">Lignes finies</div></div>
+        <div><div class="stat-value" id="stat-lines">0</div><div class="stat-label">Lignes</div></div>
       </div>
     </div>
 
@@ -128,133 +122,139 @@
 </div>
 
 <script>
-let lines = [];
-let activeFilter = 'all';
-let currentLine = null;
-let currentMoveIdx = 0;
-let board = null;
-let game = null;
-let stats = { ok: 0, ko: 0, lines_done: 0 };
-let attemptedWrongOnce = false;
+// --- State ---
+let lines = [], toleranceCp = 30, activeFilter = 'all';
+let currentLine = null, board = null, game = null;
+let drillUserMovesPlayed = 0, drillTotalMoves = 5;
+let stats = { top1: 0, alt: 0, ko: 0, lines_done: 0 };
+let userColor = 'w';
 
-let stockfish = null;
-let engineReady = false;
-let engineLines = {};
-let currentEngineFen = null;
+// Engine
+let stockfish = null, engineReady = false;
+let currentEngineFen = null, engineDepth = 0;
+let pvs = {}; // multipv num -> {uci, san, score(white-pov), raw(stm-pov), type, depth}
+let engineDone = false;
+let onEngineReady = null; // callback when current analysis done
 
+// --- Engine ---
 function initEngine() {
   try {
     stockfish = new Worker('stockfish.js');
-    stockfish.onmessage = handleEngineMessage;
-    stockfish.onerror = (e) => {
-      document.getElementById('engine-status').textContent = 'Erreur engine : ' + (e.message || 'inconnue');
-    };
+    stockfish.onmessage = onEngineMessage;
+    stockfish.onerror = e => setEngineStatus('Erreur engine: ' + (e.message || ''));
     stockfish.postMessage('uci');
     stockfish.postMessage('setoption name MultiPV value 3');
     stockfish.postMessage('isready');
   } catch (e) {
-    document.getElementById('engine-status').textContent = 'Engine non disponible : ' + e.message;
+    setEngineStatus('Engine non disponible: ' + e.message);
   }
 }
 
-function handleEngineMessage(event) {
+function onEngineMessage(event) {
   const line = typeof event.data === 'string' ? event.data : '';
   if (!line) return;
 
-  if (line === 'uciok') document.getElementById('engine-status').textContent = 'Engine chargé.';
+  if (line === 'uciok') setEngineStatus('Engine chargé.');
   if (line === 'readyok') {
     engineReady = true;
-    document.getElementById('engine-status').textContent = 'Stockfish prêt.';
+    setEngineStatus('Stockfish prêt.');
+    if (onEngineReady) { const cb = onEngineReady; onEngineReady = null; cb(); }
   }
 
   const m = line.match(/^info\s+depth\s+(\d+).*?multipv\s+(\d+).*?score\s+(cp|mate)\s+(-?\d+).*?\spv\s+(\S+)/);
-  if (m) {
+  if (m && currentEngineFen) {
     const depth = parseInt(m[1]);
     const pvNum = parseInt(m[2]);
     const scoreType = m[3];
-    const score = parseInt(m[4]);
+    const rawScore = parseInt(m[4]);
     const firstUci = m[5];
-    if (currentEngineFen) {
-      const san = uciToSan(firstUci, currentEngineFen);
-      const stm = currentEngineFen.split(' ')[1];
-      const whiteScore = stm === 'w' ? score : -score;
-      engineLines[pvNum] = { uci: firstUci, san, score: whiteScore, raw: score, type: scoreType, depth };
-      updateEnginePanel();
-    }
+    const san = uciToSan(firstUci, currentEngineFen);
+    const stm = currentEngineFen.split(' ')[1];
+    const whiteScore = stm === 'w' ? rawScore : -rawScore;
+    pvs[pvNum] = { uci: firstUci, san, score: whiteScore, raw: rawScore, type: scoreType, depth };
+    engineDepth = Math.max(engineDepth, depth);
+    updateEnginePanel();
+  }
+
+  if (line.startsWith('bestmove')) {
+    engineDone = true;
+    if (onEngineReady) { const cb = onEngineReady; onEngineReady = null; cb(); }
   }
 }
 
-function analyzePosition(fen) {
-  if (!engineReady || !stockfish) return;
+function analyzePosition(fen, targetDepth) {
   currentEngineFen = fen;
-  engineLines = {};
+  pvs = {};
+  engineDepth = 0;
+  engineDone = false;
+  if (!engineReady || !stockfish) return;
   stockfish.postMessage('stop');
   stockfish.postMessage('position fen ' + fen);
-  stockfish.postMessage('go depth 14');
-  document.getElementById('engine-status').textContent = 'Analyse en cours...';
-  document.getElementById('engine-lines').innerHTML = '<div style="color:var(--muted);font-size:12px">Calcul de la position...</div>';
+  stockfish.postMessage('go depth ' + (targetDepth || 12));
+  setEngineStatus('Analyse en cours...');
+  document.getElementById('engine-lines').innerHTML = '<div style="color:var(--muted);font-size:12px">Calcul...</div>';
 }
 
-function stopEngine() {
-  if (stockfish) stockfish.postMessage('stop');
+function waitForEngine(minDepth, callback) {
+  if (engineDepth >= minDepth && pvs[1]) return callback();
+  if (engineDone && pvs[1]) return callback();
+  onEngineReady = () => waitForEngine(minDepth, callback);
 }
 
 function uciToSan(uci, fen) {
   try {
     const tmp = new Chess(fen);
-    const m = tmp.move({
-      from: uci.substr(0, 2),
-      to: uci.substr(2, 2),
-      promotion: uci.length > 4 ? uci.substr(4, 1) : undefined
-    });
+    const m = tmp.move({ from: uci.substr(0, 2), to: uci.substr(2, 2), promotion: uci.length > 4 ? uci.substr(4, 1) : undefined });
     return m ? m.san : uci;
   } catch (e) { return uci; }
 }
 
-function formatEval(line) {
-  if (line.type === 'mate') return '#' + line.score;
-  const v = (line.score / 100).toFixed(2);
-  return (line.score >= 0 ? '+' : '') + v;
+function formatEval(pv) {
+  if (pv.type === 'mate') return '#' + pv.score;
+  const v = (pv.score / 100).toFixed(2);
+  return (pv.score >= 0 ? '+' : '') + v;
 }
+
+function setEngineStatus(s) { document.getElementById('engine-status').textContent = s; }
 
 function updateEnginePanel() {
-  const pvs = [1, 2, 3].map(n => engineLines[n]).filter(Boolean);
-  if (pvs.length === 0) return;
-
-  const expectedSan = (currentLine && currentLine.moves[currentMoveIdx] && currentLine.moves[currentMoveIdx].user)
-    ? currentLine.moves[currentMoveIdx].san.replace(/[+#!?]/g, '')
-    : null;
-
-  const html = pvs.map((pv, i) => {
-    const sanNorm = pv.san.replace(/[+#!?]/g, '');
-    const matches = expectedSan && sanNorm === expectedSan;
-    const evalStr = formatEval(pv);
+  const list = [1, 2, 3].map(n => pvs[n]).filter(Boolean);
+  if (list.length === 0) return;
+  const html = list.map((pv, i) => {
     const evalCls = pv.score > 0 ? 'plus' : (pv.score < 0 ? 'minus' : '');
-    return `<div class="engine-line ${matches ? 'match' : ''}">
+    return `<div class="engine-line">
       <div class="engine-rank">${i + 1}.</div>
       <div class="engine-move">${pv.san}</div>
-      <div class="engine-eval ${evalCls}">${evalStr}</div>
+      <div class="engine-eval ${evalCls}">${formatEval(pv)}</div>
     </div>`;
   }).join('');
-
   document.getElementById('engine-lines').innerHTML = html;
-  const maxDepth = Math.max(...pvs.map(p => p.depth));
-  const matchesExpected = expectedSan && pvs.some(p => p.san.replace(/[+#!?]/g, '') === expectedSan);
-  document.getElementById('engine-status').textContent =
-    'Profondeur ' + maxDepth +
-    (expectedSan ? (matchesExpected ? ' - ✓ ton coup attendu est dans le top 3' : ' - ⚠ ton coup attendu pas dans top 3') : '');
+  setEngineStatus('Profondeur ' + engineDepth + (engineDone ? ' (final)' : ''));
 }
+
+function highlightPlayedMove(playedSan) {
+  const normalize = s => s.replace(/[+#!?]/g, '');
+  const target = normalize(playedSan);
+  const els = document.querySelectorAll('.engine-line');
+  els.forEach((el, i) => {
+    const pv = pvs[i + 1];
+    if (pv && normalize(pv.san) === target) el.classList.add('played');
+  });
+}
+
+// --- Game / drill flow ---
 
 async function loadRepertoire() {
   try {
     const res = await fetch('repertoire.json?v=' + Date.now());
     const data = await res.json();
     lines = data.lines;
-    document.getElementById('subtitle').textContent = lines.length + ' lignes chargées';
+    toleranceCp = data.tolerance_cp || 30;
+    document.getElementById('subtitle').textContent = lines.length + ' lignes - tolérance ' + toleranceCp + 'cp';
     buildFilters();
     nextLine();
   } catch (e) {
-    document.getElementById('subtitle').textContent = 'Erreur : ' + e.message;
+    document.getElementById('subtitle').textContent = 'Erreur: ' + e.message;
   }
 }
 
@@ -285,14 +285,18 @@ function nextLine() {
 }
 
 function startLine() {
-  currentMoveIdx = 0;
+  drillUserMovesPlayed = 0;
+  drillTotalMoves = currentLine.drill_moves || 5;
   game = new Chess();
+  for (const m of currentLine.setup) game.move(m);
+
+  userColor = currentLine.color === 'white' ? 'w' : 'b';
   const orientation = currentLine.color === 'white' ? 'white' : 'black';
 
   if (board) board.destroy();
   board = Chessboard('board', {
     position: game.fen(),
-    orientation: orientation,
+    orientation,
     draggable: true,
     pieceTheme: 'https://cdn.jsdelivr.net/gh/oakmac/chessboardjs@1.0.0/website/img/chesspieces/wikipedia/{piece}.png',
     onDragStart, onDrop, onSnapEnd,
@@ -305,7 +309,9 @@ function startLine() {
   document.getElementById('priority').style.display = currentLine.priority ? 'block' : 'none';
 
   showIntroFeedback();
-  advanceAutoMoves();
+  updateMovesPlayed();
+  updateProgress();
+  advance();
 }
 
 function showIntroFeedback() {
@@ -314,35 +320,159 @@ function showIntroFeedback() {
   fb.innerHTML = `
     <div class="label">Intro</div>
     <div class="feedback-title info">${currentLine.label}</div>
-    <div class="why">${currentLine.intro || 'Joue le bon coup quand c\'est à toi.'}</div>
+    <div class="why">${currentLine.intro || 'À toi de jouer.'}</div>
   `;
 }
 
-function advanceAutoMoves() {
-  while (currentMoveIdx < currentLine.moves.length) {
-    const move = currentLine.moves[currentMoveIdx];
-    if (move.user) {
-      updateUI();
-      analyzePosition(game.fen());
-      return;
-    }
-    if (!game.move(move.san)) {
-      console.error('Invalid auto move:', move.san, 'at index', currentMoveIdx);
-      return;
-    }
-    currentMoveIdx++;
+function advance() {
+  if (drillUserMovesPlayed >= drillTotalMoves) {
+    finishLine();
+    return;
   }
-  board.position(game.fen());
-  finishLine();
+  const turn = game.turn();
+  if (turn === userColor) {
+    // User's turn
+    showUserTurnFeedback();
+    analyzePosition(game.fen(), 12);
+  } else {
+    // Engine plays opponent
+    showOpponentThinking();
+    analyzePosition(game.fen(), 12);
+    waitForEngine(10, playOpponentMove);
+  }
+}
+
+function showUserTurnFeedback() {
+  const fb = document.getElementById('feedback');
+  fb.className = 'panel feedback';
+  const moveNum = drillUserMovesPlayed + 1;
+  fb.innerHTML = `
+    <div class="label">À toi - coup ${moveNum}/${drillTotalMoves}</div>
+    <div style="font-size: 14px; color: var(--muted);">Joue ton coup. L'engine te dit son top 3 - si tu matches le top, c'est +1.</div>
+  `;
+}
+
+function showOpponentThinking() {
+  const fb = document.getElementById('feedback');
+  fb.className = 'panel feedback info';
+  fb.innerHTML = `
+    <div class="label">L'adversaire réfléchit</div>
+    <div style="font-size: 13px; color: var(--muted);">Stockfish joue le top move pour le noir...</div>
+  `;
+}
+
+function playOpponentMove() {
+  const top = pvs[1];
+  if (!top) { setTimeout(() => waitForEngine(10, playOpponentMove), 300); return; }
+  const moveObj = game.move({
+    from: top.uci.substr(0, 2),
+    to: top.uci.substr(2, 2),
+    promotion: top.uci.length > 4 ? top.uci.substr(4, 1) : undefined
+  });
+  if (!moveObj) { console.error('opponent move illegal', top); return; }
+  board.position(game.fen(), true);
+  updateMovesPlayed();
+  setTimeout(advance, 700);
+}
+
+function onDragStart(source, piece) {
+  if (drillUserMovesPlayed >= drillTotalMoves) return false;
+  const turn = game.turn();
+  if (turn !== userColor) return false;
+  if ((turn === 'w' && piece.search(/^b/) !== -1) || (turn === 'b' && piece.search(/^w/) !== -1)) return false;
+  // Block input if engine not at minimum depth
+  if (!pvs[1] || engineDepth < 10) {
+    return false;
+  }
+}
+
+function onDrop(source, target) {
+  const move = game.move({ from: source, to: target, promotion: 'q' });
+  if (move === null) return 'snapback';
+  return checkUserMove(move);
+}
+
+function onSnapEnd() { board.position(game.fen()); }
+
+function normalize(san) { return san.replace(/[+#!?]/g, ''); }
+
+function checkUserMove(move) {
+  const top1 = pvs[1], top2 = pvs[2], top3 = pvs[3];
+  const playedNorm = normalize(move.san);
+
+  let result = null;
+  if (top1 && normalize(top1.san) === playedNorm) result = { rank: 1, pv: top1, type: 'top1' };
+  else if (top2 && normalize(top2.san) === playedNorm && Math.abs(top2.raw - top1.raw) <= toleranceCp) result = { rank: 2, pv: top2, type: 'alt' };
+  else if (top3 && normalize(top3.san) === playedNorm && Math.abs(top3.raw - top1.raw) <= toleranceCp) result = { rank: 3, pv: top3, type: 'alt' };
+
+  // Check if user move is in top 3 but outside tolerance
+  const inTop3 = [top1, top2, top3].some(pv => pv && normalize(pv.san) === playedNorm);
+
+  highlightPlayedMove(move.san);
+
+  if (result) {
+    drillUserMovesPlayed++;
+    if (result.type === 'top1') {
+      stats.top1++;
+      showAccept(`✓ TOP 1 (${formatEval(result.pv)})`, move.san, result.pv, top1);
+    } else {
+      stats.alt++;
+      showAccept(`✓ Top ${result.rank} - alternative acceptable (${formatEval(result.pv)})`, move.san, result.pv, top1);
+    }
+    updateStats();
+    setTimeout(advance, 1000);
+  } else if (inTop3) {
+    // In top 3 but eval is too far from top1
+    drillUserMovesPlayed++;
+    stats.alt++;
+    showAcceptMarginal(move.san, top1);
+    updateStats();
+    setTimeout(advance, 1000);
+  } else {
+    // Not in top 3 - reject
+    stats.ko++;
+    showReject(move.san, top1);
+    updateStats();
+    game.undo();
+    setTimeout(() => board.position(game.fen()), 300);
+    return 'snapback';
+  }
+}
+
+function showAccept(title, playedSan, pv, top1) {
+  const fb = document.getElementById('feedback');
+  fb.className = 'panel feedback success';
+  const evalNote = pv.san !== top1.san
+    ? `Top 1 engine : <strong>${top1.san}</strong> (${formatEval(top1)}). Ton coup est dans la tolérance.`
+    : `C'est exactement le coup que Stockfish recommande.`;
+  fb.innerHTML = `
+    <div class="feedback-title ok">${title}</div>
+    <div class="why">Tu as joué <strong>${playedSan}</strong>. ${evalNote}</div>
+  `;
+}
+
+function showAcceptMarginal(playedSan, top1) {
+  const fb = document.getElementById('feedback');
+  fb.className = 'panel feedback warn';
+  fb.innerHTML = `
+    <div class="feedback-title warn">⚠ ${playedSan} - dans top 3 mais hors tolérance</div>
+    <div class="why">Top 1 engine : <strong>${top1.san}</strong> (${formatEval(top1)}). Ton coup est dans le top 3 mais l'écart est >${toleranceCp}cp. On accepte mais c'est sub-optimal.</div>
+  `;
+}
+
+function showReject(playedSan, top1) {
+  const fb = document.getElementById('feedback');
+  fb.className = 'panel feedback error';
+  fb.innerHTML = `
+    <div class="feedback-title ko">✗ ${playedSan} - pas dans top 3 engine</div>
+    <div class="why">Top 1 Stockfish : <strong>${top1.san}</strong> (${formatEval(top1)}). Regarde le panneau Stockfish pour les 3 meilleurs. Réessaie.</div>
+  `;
 }
 
 function finishLine() {
   stats.lines_done++;
-  attemptedWrongOnce = false;
-  stopEngine();
-  document.getElementById('engine-status').textContent = 'Ligne complétée.';
+  setEngineStatus('Ligne complétée.');
   document.getElementById('engine-lines').innerHTML = '<div style="color:var(--muted);font-size:12px">Plus de coup à analyser.</div>';
-
   const fb = document.getElementById('feedback');
   fb.className = 'panel feedback done';
   const planHtml = currentLine.plan ? `
@@ -352,114 +482,37 @@ function finishLine() {
     </div>
   ` : '';
   fb.innerHTML = `
-    <div class="feedback-title done">✓ Ligne complétée !</div>
-    <div class="why">Tu as joué toute la séquence. Maintenant tu sais quoi faire jusqu'à ce point.</div>
+    <div class="feedback-title done">✓ Ligne complétée ! ${drillUserMovesPlayed}/${drillTotalMoves} coups joués</div>
+    <div class="why">Tu as drillé ${drillUserMovesPlayed} positions en mode engine-driven.</div>
     ${planHtml}
   `;
   updateProgress();
   updateStats();
 }
 
-function updateUI() {
-  setTimeout(() => board.position(game.fen(), true), 50);
-  updateMovesPlayed();
-  updateProgress();
-  const move = currentLine.moves[currentMoveIdx];
-  if (!move || !move.user) return;
-  const fb = document.getElementById('feedback');
-  fb.className = 'panel feedback';
-  const moveNum = Math.floor(currentMoveIdx / 2) + 1;
-  const sideStr = (currentMoveIdx % 2 === 0) ? 'BLANCS' : 'NOIRS';
-  fb.innerHTML = `
-    <div class="label">À toi - coup ${moveNum} ${sideStr}</div>
-    <div style="font-size: 14px; color: var(--muted);">Joue ton coup. L'engine évalue à droite.</div>
-  `;
-}
-
 function updateMovesPlayed() {
-  const html = currentLine.moves.slice(0, currentMoveIdx).map((m, i) => {
+  const history = game.history();
+  const html = history.map((m, i) => {
     const num = i % 2 === 0 ? `<span style="color:var(--muted)">${(i / 2) + 1}.</span>` : '';
-    return `${num} ${m.san}`;
+    return `${num} ${m}`;
   }).join(' ');
-  document.getElementById('moves-played').innerHTML = html || '<span style="color:var(--muted)">(début de partie)</span>';
+  document.getElementById('moves-played').innerHTML = html || '<span style="color:var(--muted)">(début)</span>';
 }
 
 function updateProgress() {
-  document.getElementById('progress').style.width = ((currentMoveIdx / currentLine.moves.length) * 100) + '%';
-}
-
-function onDragStart(source, piece) {
-  if (currentMoveIdx >= currentLine.moves.length) return false;
-  const expectedMove = currentLine.moves[currentMoveIdx];
-  if (!expectedMove.user) return false;
-  const turn = game.turn();
-  if ((turn === 'w' && piece.search(/^b/) !== -1) || (turn === 'b' && piece.search(/^w/) !== -1)) return false;
-}
-
-function onDrop(source, target) {
-  const move = game.move({ from: source, to: target, promotion: 'q' });
-  if (move === null) return 'snapback';
-  return checkMove(move);
-}
-
-function onSnapEnd() { board.position(game.fen()); }
-
-function normalize(san) { return san.replace(/[+#!?]/g, ''); }
-
-function checkMove(playedMove) {
-  const expected = currentLine.moves[currentMoveIdx];
-  const expectedSan = expected.san;
-  const alts = expected.alts || [];
-  const playedNorm = normalize(playedMove.san);
-  const expectedNorm = normalize(expectedSan);
-  const altsNorm = alts.map(normalize);
-
-  const fb = document.getElementById('feedback');
-
-  if (playedNorm === expectedNorm) {
-    if (!attemptedWrongOnce) stats.ok++;
-    attemptedWrongOnce = false;
-    fb.className = 'panel feedback success';
-    fb.innerHTML = `<div class="feedback-title ok">✓ ${expectedSan} - bon coup !</div><div class="why">${expected.why || ''}</div>`;
-    currentMoveIdx++;
-    updateStats();
-    setTimeout(advanceAutoMoves, 800);
-  } else if (altsNorm.includes(playedNorm)) {
-    if (!attemptedWrongOnce) stats.ok++;
-    attemptedWrongOnce = false;
-    fb.className = 'panel feedback success';
-    fb.innerHTML = `<div class="feedback-title ok">✓ ${playedMove.san} <span class="alt-badge">alternative</span></div><div class="why">Coup principal : <strong>${expectedSan}</strong>. ${expected.why || ''}</div>`;
-    currentMoveIdx++;
-    updateStats();
-    setTimeout(advanceAutoMoves, 800);
-  } else {
-    stats.ko++;
-    attemptedWrongOnce = true;
-    fb.className = 'panel feedback error';
-    fb.innerHTML = `<div class="feedback-title ko">✗ Pas ${playedMove.san}</div><div class="why">Le bon coup est <strong>${expectedSan}</strong>. ${expected.why || ''}<br><br><em>Réessaie : joue ${expectedSan}.</em></div>`;
-    game.undo();
-    updateStats();
-    setTimeout(() => board.position(game.fen()), 300);
-    return 'snapback';
-  }
+  const pct = drillTotalMoves > 0 ? (drillUserMovesPlayed / drillTotalMoves) * 100 : 0;
+  document.getElementById('progress').style.width = pct + '%';
 }
 
 function updateStats() {
-  document.getElementById('stat-ok').textContent = stats.ok;
+  document.getElementById('stat-top1').textContent = stats.top1;
+  document.getElementById('stat-alt').textContent = stats.alt;
   document.getElementById('stat-ko').textContent = stats.ko;
   document.getElementById('stat-lines').textContent = stats.lines_done;
 }
 
 document.getElementById('btn-next').addEventListener('click', nextLine);
 document.getElementById('btn-restart').addEventListener('click', startLine);
-document.getElementById('btn-show').addEventListener('click', () => {
-  if (currentMoveIdx >= currentLine.moves.length) return;
-  const expected = currentLine.moves[currentMoveIdx];
-  if (!expected || !expected.user) return;
-  const fb = document.getElementById('feedback');
-  fb.className = 'panel feedback info';
-  fb.innerHTML = `<div class="feedback-title info">Coup attendu : ${expected.san}</div><div class="why">${expected.why || ''}<br><br><em>Joue ce coup pour continuer.</em></div>`;
-});
 
 initEngine();
 loadRepertoire();
