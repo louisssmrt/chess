@@ -18,129 +18,69 @@
     --error: #d9534f;
     --warn: #f0ad4e;
     --info: #5bc0de;
+    --engine: #6c5ce7;
   }
   * { box-sizing: border-box; }
-  body {
-    margin: 0;
-    padding: 20px;
-    background: var(--bg);
-    color: var(--text);
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-  }
-  .wrap {
-    max-width: 1100px;
-    margin: 0 auto;
-    display: grid;
-    grid-template-columns: 1fr 400px;
-    gap: 24px;
-  }
-  @media (max-width: 900px) {
-    .wrap { grid-template-columns: 1fr; }
-  }
+  body { margin: 0; padding: 20px; background: var(--bg); color: var(--text); font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+  .wrap { max-width: 1200px; margin: 0 auto; display: grid; grid-template-columns: 1fr 420px; gap: 24px; }
+  @media (max-width: 900px) { .wrap { grid-template-columns: 1fr; } }
   h1 { font-size: 22px; margin: 0 0 8px; }
   .subtitle { color: var(--muted); font-size: 13px; margin-bottom: 16px; }
   #board { width: 100%; max-width: 500px; }
-  .panel {
-    background: var(--panel);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 16px;
-    margin-bottom: 12px;
-  }
+  .panel { background: var(--panel); border: 1px solid var(--border); border-radius: 8px; padding: 16px; margin-bottom: 12px; }
   .label { font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; }
   .opening { font-size: 16px; font-weight: 600; margin-bottom: 4px; }
-  .moves-played { font-family: "SF Mono", Consolas, monospace; font-size: 13px; color: var(--text); line-height: 1.6; word-spacing: 4px; }
-  .move-current { background: rgba(92, 184, 92, 0.25); padding: 1px 4px; border-radius: 3px; }
+  .moves-played { font-family: "SF Mono", Consolas, monospace; font-size: 13px; color: var(--text); line-height: 1.6; }
   .priority { color: var(--warn); font-size: 12px; margin-top: 6px; font-weight: 500; }
   .feedback { min-height: 100px; }
   .feedback.success { border-color: var(--accent); }
   .feedback.error { border-color: var(--error); }
   .feedback.info { border-color: var(--info); }
+  .feedback.done { border-color: var(--accent); }
   .feedback-title { font-weight: 600; margin-bottom: 6px; font-size: 15px; }
   .feedback-title.ok { color: var(--accent); }
   .feedback-title.ko { color: var(--error); }
   .feedback-title.info { color: var(--info); }
   .feedback-title.done { color: var(--accent); }
   .why { color: var(--muted); font-size: 13px; line-height: 1.5; }
-  button {
-    background: var(--accent);
-    color: white;
-    border: none;
-    padding: 10px 16px;
-    border-radius: 6px;
-    cursor: pointer;
-    font-size: 14px;
-    font-weight: 500;
-  }
+  .plan-block { margin-top: 12px; padding-top: 12px; border-top: 1px dashed var(--border); }
+  .plan-block .label { color: var(--accent); }
+  .plan-block .text { color: var(--text); font-size: 13px; line-height: 1.5; }
+  button { background: var(--accent); color: white; border: none; padding: 10px 16px; border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: 500; }
   button:hover { filter: brightness(1.1); }
-  button:disabled { opacity: 0.4; cursor: not-allowed; }
-  button.secondary {
-    background: var(--panel);
-    border: 1px solid var(--border);
-    color: var(--text);
-  }
+  button.secondary { background: var(--panel); border: 1px solid var(--border); color: var(--text); }
   .controls { display: flex; gap: 8px; margin-top: 12px; flex-wrap: wrap; }
-  .stats {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 8px;
-    text-align: center;
-  }
+  .stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; text-align: center; }
   .stat-value { font-size: 24px; font-weight: 600; }
   .stat-label { font-size: 11px; color: var(--muted); text-transform: uppercase; }
-  .filter { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 8px; }
-  .chip {
-    padding: 6px 12px;
-    border: 1px solid var(--border);
-    border-radius: 16px;
-    font-size: 12px;
-    cursor: pointer;
-    background: var(--panel);
-    color: var(--muted);
-  }
+  .filter { display: flex; gap: 8px; flex-wrap: wrap; }
+  .chip { padding: 6px 12px; border: 1px solid var(--border); border-radius: 16px; font-size: 12px; cursor: pointer; background: var(--panel); color: var(--muted); }
   .chip.active { background: var(--accent); color: white; border-color: var(--accent); }
   .hint { font-size: 11px; color: var(--muted); margin-top: 8px; }
-  .progress-bar {
-    height: 4px;
-    background: var(--border);
-    border-radius: 2px;
-    overflow: hidden;
-    margin-top: 8px;
-  }
-  .progress-fill {
-    height: 100%;
-    background: var(--accent);
-    transition: width 0.3s;
-  }
-  .alt-badge {
-    display: inline-block;
-    padding: 2px 6px;
-    border-radius: 4px;
-    background: rgba(240, 173, 78, 0.2);
-    color: var(--warn);
-    font-size: 11px;
-    margin-left: 6px;
-  }
-  .turn-indicator {
-    display: inline-block;
-    padding: 2px 8px;
-    border-radius: 4px;
-    background: var(--info);
-    color: white;
-    font-size: 11px;
-    margin-left: 8px;
-    font-weight: 600;
-  }
+  .progress-bar { height: 4px; background: var(--border); border-radius: 2px; overflow: hidden; margin-top: 8px; }
+  .progress-fill { height: 100%; background: var(--accent); transition: width 0.3s; }
+  .alt-badge { display: inline-block; padding: 2px 6px; border-radius: 4px; background: rgba(240, 173, 78, 0.2); color: var(--warn); font-size: 11px; margin-left: 6px; }
+  .turn-indicator { display: inline-block; padding: 2px 8px; border-radius: 4px; background: var(--info); color: white; font-size: 11px; margin-left: 8px; font-weight: 600; }
   .turn-indicator.black { background: #333; }
+  .engine-panel { border-color: var(--engine); }
+  .engine-panel .label { color: var(--engine); }
+  .engine-status { font-size: 11px; color: var(--muted); margin-bottom: 8px; }
+  .engine-line { display: flex; align-items: center; padding: 6px 8px; border-radius: 4px; margin-bottom: 4px; background: rgba(108, 92, 231, 0.1); font-family: "SF Mono", Consolas, monospace; font-size: 13px; }
+  .engine-line.match { background: rgba(92, 184, 92, 0.2); }
+  .engine-rank { width: 24px; color: var(--muted); font-size: 11px; }
+  .engine-move { flex: 1; font-weight: 600; }
+  .engine-eval { color: var(--muted); font-size: 12px; }
+  .engine-eval.plus { color: var(--accent); }
+  .engine-eval.minus { color: var(--error); }
 </style>
 </head>
 <body>
 <div class="wrap">
   <div>
     <h1>Chess Drill <span style="color:var(--muted);font-weight:400;font-size:14px">- louisssmrt</span></h1>
-    <div class="subtitle" id="subtitle">Charge le répertoire...</div>
+    <div class="subtitle" id="subtitle">Charge le répertoire et l'engine...</div>
     <div id="board"></div>
-    <div class="hint">Joue ton coup en drag&drop. Bon coup → l'adversaire répond automatiquement et tu joues la suite.</div>
+    <div class="hint">Joue ton coup en drag&drop. Stockfish évalue chaque position - tu vois ses top 3 moves dans le panneau Engine.</div>
   </div>
 
   <div>
@@ -155,6 +95,14 @@
     <div class="panel feedback" id="feedback">
       <div class="label">À toi de jouer</div>
       <div style="font-size: 14px; color: var(--muted);">Trouve le bon coup.</div>
+    </div>
+
+    <div class="panel engine-panel">
+      <div class="label">Stockfish (live)</div>
+      <div class="engine-status" id="engine-status">Initialisation...</div>
+      <div id="engine-lines">
+        <div style="color:var(--muted);font-size:12px">En attente de position.</div>
+      </div>
     </div>
 
     <div class="controls">
@@ -183,11 +131,119 @@
 let lines = [];
 let activeFilter = 'all';
 let currentLine = null;
-let currentMoveIdx = 0;     // index dans currentLine.moves
+let currentMoveIdx = 0;
 let board = null;
 let game = null;
 let stats = { ok: 0, ko: 0, lines_done: 0 };
-let attemptedWrongOnce = false;  // pour ne pas compter ok si déjà loupé
+let attemptedWrongOnce = false;
+
+let stockfish = null;
+let engineReady = false;
+let engineLines = {};
+let currentEngineFen = null;
+
+function initEngine() {
+  try {
+    stockfish = new Worker('stockfish.js');
+    stockfish.onmessage = handleEngineMessage;
+    stockfish.onerror = (e) => {
+      document.getElementById('engine-status').textContent = 'Erreur engine : ' + (e.message || 'inconnue');
+    };
+    stockfish.postMessage('uci');
+    stockfish.postMessage('setoption name MultiPV value 3');
+    stockfish.postMessage('isready');
+  } catch (e) {
+    document.getElementById('engine-status').textContent = 'Engine non disponible : ' + e.message;
+  }
+}
+
+function handleEngineMessage(event) {
+  const line = typeof event.data === 'string' ? event.data : '';
+  if (!line) return;
+
+  if (line === 'uciok') document.getElementById('engine-status').textContent = 'Engine chargé.';
+  if (line === 'readyok') {
+    engineReady = true;
+    document.getElementById('engine-status').textContent = 'Stockfish prêt.';
+  }
+
+  const m = line.match(/^info\s+depth\s+(\d+).*?multipv\s+(\d+).*?score\s+(cp|mate)\s+(-?\d+).*?\spv\s+(\S+)/);
+  if (m) {
+    const depth = parseInt(m[1]);
+    const pvNum = parseInt(m[2]);
+    const scoreType = m[3];
+    const score = parseInt(m[4]);
+    const firstUci = m[5];
+    if (currentEngineFen) {
+      const san = uciToSan(firstUci, currentEngineFen);
+      const stm = currentEngineFen.split(' ')[1];
+      const whiteScore = stm === 'w' ? score : -score;
+      engineLines[pvNum] = { uci: firstUci, san, score: whiteScore, raw: score, type: scoreType, depth };
+      updateEnginePanel();
+    }
+  }
+}
+
+function analyzePosition(fen) {
+  if (!engineReady || !stockfish) return;
+  currentEngineFen = fen;
+  engineLines = {};
+  stockfish.postMessage('stop');
+  stockfish.postMessage('position fen ' + fen);
+  stockfish.postMessage('go depth 14');
+  document.getElementById('engine-status').textContent = 'Analyse en cours...';
+  document.getElementById('engine-lines').innerHTML = '<div style="color:var(--muted);font-size:12px">Calcul de la position...</div>';
+}
+
+function stopEngine() {
+  if (stockfish) stockfish.postMessage('stop');
+}
+
+function uciToSan(uci, fen) {
+  try {
+    const tmp = new Chess(fen);
+    const m = tmp.move({
+      from: uci.substr(0, 2),
+      to: uci.substr(2, 2),
+      promotion: uci.length > 4 ? uci.substr(4, 1) : undefined
+    });
+    return m ? m.san : uci;
+  } catch (e) { return uci; }
+}
+
+function formatEval(line) {
+  if (line.type === 'mate') return '#' + line.score;
+  const v = (line.score / 100).toFixed(2);
+  return (line.score >= 0 ? '+' : '') + v;
+}
+
+function updateEnginePanel() {
+  const pvs = [1, 2, 3].map(n => engineLines[n]).filter(Boolean);
+  if (pvs.length === 0) return;
+
+  const expectedSan = (currentLine && currentLine.moves[currentMoveIdx] && currentLine.moves[currentMoveIdx].user)
+    ? currentLine.moves[currentMoveIdx].san.replace(/[+#!?]/g, '')
+    : null;
+
+  const html = pvs.map((pv, i) => {
+    const sanNorm = pv.san.replace(/[+#!?]/g, '');
+    const matches = expectedSan && sanNorm === expectedSan;
+    const evalStr = formatEval(pv);
+    const evalCls = pv.score > 0 ? 'plus' : (pv.score < 0 ? 'minus' : '');
+    return `<div class="engine-line ${matches ? 'match' : ''}">
+      <div class="engine-rank">${i + 1}.</div>
+      <div class="engine-move">${pv.san}</div>
+      <div class="engine-eval ${evalCls}">${evalStr}</div>
+    </div>`;
+  }).join('');
+
+  document.getElementById('engine-lines').innerHTML = html;
+  const maxDepth = Math.max(...pvs.map(p => p.depth));
+  const matchesExpected = expectedSan && pvs.some(p => p.san.replace(/[+#!?]/g, '') === expectedSan);
+  document.getElementById('engine-status').textContent =
+    'Profondeur ' + maxDepth +
+    (expectedSan ? (matchesExpected ? ' - ✓ ton coup attendu est dans le top 3' : ' - ⚠ ton coup attendu pas dans top 3') : '');
+}
 
 async function loadRepertoire() {
   try {
@@ -204,8 +260,9 @@ async function loadRepertoire() {
 
 function buildFilters() {
   const openings = ['all', ...new Set(lines.map(l => l.opening))];
-  const html = openings.map(o => `<div class="chip ${o === 'all' ? 'active' : ''}" data-filter="${o}">${o === 'all' ? 'Tout' : o}</div>`).join('');
-  document.getElementById('filter-chips').innerHTML = html;
+  document.getElementById('filter-chips').innerHTML = openings.map(o =>
+    `<div class="chip ${o === 'all' ? 'active' : ''}" data-filter="${o}">${o === 'all' ? 'Tout' : o}</div>`
+  ).join('');
   document.querySelectorAll('.chip').forEach(c => {
     c.addEventListener('click', () => {
       document.querySelectorAll('.chip').forEach(x => x.classList.remove('active'));
@@ -217,8 +274,7 @@ function buildFilters() {
 }
 
 function filteredLines() {
-  if (activeFilter === 'all') return lines;
-  return lines.filter(l => l.opening === activeFilter);
+  return activeFilter === 'all' ? lines : lines.filter(l => l.opening === activeFilter);
 }
 
 function nextLine() {
@@ -239,9 +295,7 @@ function startLine() {
     orientation: orientation,
     draggable: true,
     pieceTheme: 'https://cdn.jsdelivr.net/gh/oakmac/chessboardjs@1.0.0/website/img/chesspieces/wikipedia/{piece}.png',
-    onDragStart: onDragStart,
-    onDrop: onDrop,
-    onSnapEnd: onSnapEnd,
+    onDragStart, onDrop, onSnapEnd,
   });
 
   document.getElementById('color-indicator').textContent = currentLine.color === 'white' ? 'BLANCS' : 'NOIRS';
@@ -264,27 +318,20 @@ function showIntroFeedback() {
   `;
 }
 
-// Play all non-user moves until next user move or end of line
 function advanceAutoMoves() {
   while (currentMoveIdx < currentLine.moves.length) {
     const move = currentLine.moves[currentMoveIdx];
     if (move.user) {
-      // Stop, wait for user input
       updateUI();
-      if (currentMoveIdx === currentLine.moves.length - 1 && move.user) {
-        // last user move - keep going
-      }
+      analyzePosition(game.fen());
       return;
     }
-    // Play this move automatically
-    const result = game.move(move.san);
-    if (!result) {
+    if (!game.move(move.san)) {
       console.error('Invalid auto move:', move.san, 'at index', currentMoveIdx);
       return;
     }
     currentMoveIdx++;
   }
-  // No more user moves - line is finished
   board.position(game.fen());
   finishLine();
 }
@@ -292,32 +339,40 @@ function advanceAutoMoves() {
 function finishLine() {
   stats.lines_done++;
   attemptedWrongOnce = false;
+  stopEngine();
+  document.getElementById('engine-status').textContent = 'Ligne complétée.';
+  document.getElementById('engine-lines').innerHTML = '<div style="color:var(--muted);font-size:12px">Plus de coup à analyser.</div>';
+
   const fb = document.getElementById('feedback');
-  fb.className = 'panel feedback success';
+  fb.className = 'panel feedback done';
+  const planHtml = currentLine.plan ? `
+    <div class="plan-block">
+      <div class="label">PLAN à partir d'ici</div>
+      <div class="text">${currentLine.plan}</div>
+    </div>
+  ` : '';
   fb.innerHTML = `
-    <div class="feedback-title done">Ligne complétée !</div>
-    <div class="why">Tu as joué toute la séquence. Clique sur "Ligne suivante" pour passer à autre chose, ou "Recommencer" pour refaire celle-ci.</div>
+    <div class="feedback-title done">✓ Ligne complétée !</div>
+    <div class="why">Tu as joué toute la séquence. Maintenant tu sais quoi faire jusqu'à ce point.</div>
+    ${planHtml}
   `;
   updateProgress();
   updateStats();
 }
 
 function updateUI() {
-  // Show board position after auto-played moves
   setTimeout(() => board.position(game.fen(), true), 50);
   updateMovesPlayed();
   updateProgress();
-
   const move = currentLine.moves[currentMoveIdx];
   if (!move || !move.user) return;
-
   const fb = document.getElementById('feedback');
   fb.className = 'panel feedback';
   const moveNum = Math.floor(currentMoveIdx / 2) + 1;
   const sideStr = (currentMoveIdx % 2 === 0) ? 'BLANCS' : 'NOIRS';
   fb.innerHTML = `
     <div class="label">À toi - coup ${moveNum} ${sideStr}</div>
-    <div style="font-size: 14px; color: var(--muted);">Joue ton coup sur l'échiquier.</div>
+    <div style="font-size: 14px; color: var(--muted);">Joue ton coup. L'engine évalue à droite.</div>
   `;
 }
 
@@ -330,20 +385,15 @@ function updateMovesPlayed() {
 }
 
 function updateProgress() {
-  const total = currentLine.moves.length;
-  const pct = (currentMoveIdx / total) * 100;
-  document.getElementById('progress').style.width = pct + '%';
+  document.getElementById('progress').style.width = ((currentMoveIdx / currentLine.moves.length) * 100) + '%';
 }
 
 function onDragStart(source, piece) {
   if (currentMoveIdx >= currentLine.moves.length) return false;
   const expectedMove = currentLine.moves[currentMoveIdx];
   if (!expectedMove.user) return false;
-  // Only allow dragging pieces of the side to move
   const turn = game.turn();
-  if ((turn === 'w' && piece.search(/^b/) !== -1) || (turn === 'b' && piece.search(/^w/) !== -1)) {
-    return false;
-  }
+  if ((turn === 'w' && piece.search(/^b/) !== -1) || (turn === 'b' && piece.search(/^w/) !== -1)) return false;
 }
 
 function onDrop(source, target) {
@@ -352,13 +402,9 @@ function onDrop(source, target) {
   return checkMove(move);
 }
 
-function onSnapEnd() {
-  board.position(game.fen());
-}
+function onSnapEnd() { board.position(game.fen()); }
 
-function normalize(san) {
-  return san.replace(/[+#!?]/g, '');
-}
+function normalize(san) { return san.replace(/[+#!?]/g, ''); }
 
 function checkMove(playedMove) {
   const expected = currentLine.moves[currentMoveIdx];
@@ -366,43 +412,31 @@ function checkMove(playedMove) {
   const alts = expected.alts || [];
   const playedNorm = normalize(playedMove.san);
   const expectedNorm = normalize(expectedSan);
-  const altsNorm = alts.map(a => normalize(a));
+  const altsNorm = alts.map(normalize);
 
   const fb = document.getElementById('feedback');
 
   if (playedNorm === expectedNorm) {
-    // Correct move
     if (!attemptedWrongOnce) stats.ok++;
     attemptedWrongOnce = false;
     fb.className = 'panel feedback success';
-    fb.innerHTML = `
-      <div class="feedback-title ok">✓ ${expectedSan} - bon coup !</div>
-      <div class="why">${expected.why || ''}</div>
-    `;
+    fb.innerHTML = `<div class="feedback-title ok">✓ ${expectedSan} - bon coup !</div><div class="why">${expected.why || ''}</div>`;
     currentMoveIdx++;
     updateStats();
     setTimeout(advanceAutoMoves, 800);
   } else if (altsNorm.includes(playedNorm)) {
-    // Acceptable alternative
     if (!attemptedWrongOnce) stats.ok++;
     attemptedWrongOnce = false;
     fb.className = 'panel feedback success';
-    fb.innerHTML = `
-      <div class="feedback-title ok">✓ ${playedMove.san} <span class="alt-badge">alternative acceptable</span></div>
-      <div class="why">Le coup principal du répertoire est <strong>${expectedSan}</strong>. ${expected.why || ''}</div>
-    `;
+    fb.innerHTML = `<div class="feedback-title ok">✓ ${playedMove.san} <span class="alt-badge">alternative</span></div><div class="why">Coup principal : <strong>${expectedSan}</strong>. ${expected.why || ''}</div>`;
     currentMoveIdx++;
     updateStats();
     setTimeout(advanceAutoMoves, 800);
   } else {
-    // Wrong move - undo and let retry
     stats.ko++;
     attemptedWrongOnce = true;
     fb.className = 'panel feedback error';
-    fb.innerHTML = `
-      <div class="feedback-title ko">✗ Pas ${playedMove.san}</div>
-      <div class="why">Le bon coup est <strong>${expectedSan}</strong>. ${expected.why || ''}<br><br><em>Réessaie : joue ${expectedSan} sur l'échiquier.</em></div>
-    `;
+    fb.innerHTML = `<div class="feedback-title ko">✗ Pas ${playedMove.san}</div><div class="why">Le bon coup est <strong>${expectedSan}</strong>. ${expected.why || ''}<br><br><em>Réessaie : joue ${expectedSan}.</em></div>`;
     game.undo();
     updateStats();
     setTimeout(() => board.position(game.fen()), 300);
@@ -424,12 +458,10 @@ document.getElementById('btn-show').addEventListener('click', () => {
   if (!expected || !expected.user) return;
   const fb = document.getElementById('feedback');
   fb.className = 'panel feedback info';
-  fb.innerHTML = `
-    <div class="feedback-title info">Coup attendu : ${expected.san}</div>
-    <div class="why">${expected.why || ''}<br><br><em>Joue ce coup pour continuer.</em></div>
-  `;
+  fb.innerHTML = `<div class="feedback-title info">Coup attendu : ${expected.san}</div><div class="why">${expected.why || ''}<br><br><em>Joue ce coup pour continuer.</em></div>`;
 });
 
+initEngine();
 loadRepertoire();
 </script>
 </body>
