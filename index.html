@@ -2,126 +2,281 @@
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
-<title>Chess Drill - Louis</title>
+<title>Chess Drill</title>
 <link rel="stylesheet" href="https://unpkg.com/@chrisoakman/chessboardjs@1.0.0/dist/chessboard-1.0.0.min.css">
 <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chess.js@0.10.3/chess.min.js"></script>
 <script src="https://unpkg.com/@chrisoakman/chessboardjs@1.0.0/dist/chessboard-1.0.0.min.js"></script>
 <style>
   :root {
-    --bg: #1a1a1a; --panel: #242424; --border: #333; --text: #e8e8e8;
-    --muted: #999; --accent: #5cb85c; --error: #d9534f; --warn: #f0ad4e;
-    --info: #5bc0de; --engine: #6c5ce7;
+    --bg: oklch(0.18 0.008 250);
+    --panel: oklch(0.22 0.008 250);
+    --panel-hi: oklch(0.26 0.008 250);
+    --border: oklch(0.30 0.008 250);
+    --text: oklch(0.94 0.005 250);
+    --muted: oklch(0.62 0.012 250);
+    --accent: oklch(0.74 0.16 145);
+    --accent-bg: oklch(0.30 0.08 145);
+    --error: oklch(0.66 0.18 25);
+    --error-bg: oklch(0.30 0.09 25);
+    --warn: oklch(0.78 0.15 75);
+    --warn-bg: oklch(0.30 0.08 75);
+    --info: oklch(0.72 0.13 220);
+    --engine: oklch(0.68 0.16 280);
   }
-  * { box-sizing: border-box; }
-  body { margin: 0; padding: 20px; background: var(--bg); color: var(--text); font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
-  .wrap { max-width: 1200px; margin: 0 auto; display: grid; grid-template-columns: 1fr 420px; gap: 24px; }
-  @media (max-width: 900px) { .wrap { grid-template-columns: 1fr; } }
-  h1 { font-size: 22px; margin: 0 0 8px; }
-  .subtitle { color: var(--muted); font-size: 13px; margin-bottom: 16px; }
-  #board { width: 100%; max-width: 500px; }
-  .panel { background: var(--panel); border: 1px solid var(--border); border-radius: 8px; padding: 16px; margin-bottom: 12px; }
-  .label { font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; }
-  .opening { font-size: 16px; font-weight: 600; margin-bottom: 4px; }
-  .moves-played { font-family: "SF Mono", Consolas, monospace; font-size: 13px; color: var(--text); line-height: 1.6; }
-  .priority { color: var(--warn); font-size: 12px; margin-top: 6px; font-weight: 500; }
-  .feedback { min-height: 100px; }
-  .feedback.success { border-color: var(--accent); }
-  .feedback.error { border-color: var(--error); }
-  .feedback.info { border-color: var(--info); }
-  .feedback.warn { border-color: var(--warn); }
-  .feedback.done { border-color: var(--accent); }
-  .feedback-title { font-weight: 600; margin-bottom: 6px; font-size: 15px; }
-  .feedback-title.ok { color: var(--accent); }
-  .feedback-title.ko { color: var(--error); }
-  .feedback-title.info { color: var(--info); }
-  .feedback-title.warn { color: var(--warn); }
-  .feedback-title.done { color: var(--accent); }
-  .why { color: var(--muted); font-size: 13px; line-height: 1.5; }
-  .plan-block { margin-top: 12px; padding-top: 12px; border-top: 1px dashed var(--border); }
-  .plan-block .label { color: var(--accent); }
-  .plan-block .text { color: var(--text); font-size: 13px; line-height: 1.5; }
-  button { background: var(--accent); color: white; border: none; padding: 10px 16px; border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: 500; }
-  button:hover { filter: brightness(1.1); }
-  button.secondary { background: var(--panel); border: 1px solid var(--border); color: var(--text); }
-  .controls { display: flex; gap: 8px; margin-top: 12px; flex-wrap: wrap; }
-  .stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; text-align: center; }
-  .stat-value { font-size: 22px; font-weight: 600; }
-  .stat-label { font-size: 10px; color: var(--muted); text-transform: uppercase; }
-  .filter { display: flex; gap: 8px; flex-wrap: wrap; }
-  .chip { padding: 6px 12px; border: 1px solid var(--border); border-radius: 16px; font-size: 12px; cursor: pointer; background: var(--panel); color: var(--muted); }
-  .chip.active { background: var(--accent); color: white; border-color: var(--accent); }
-  .hint { font-size: 11px; color: var(--muted); margin-top: 8px; }
-  .progress-bar { height: 4px; background: var(--border); border-radius: 2px; overflow: hidden; margin-top: 8px; }
-  .progress-fill { height: 100%; background: var(--accent); transition: width 0.3s; }
-  .turn-indicator { display: inline-block; padding: 2px 8px; border-radius: 4px; background: var(--info); color: white; font-size: 11px; margin-left: 8px; font-weight: 600; }
-  .turn-indicator.black { background: #333; }
-  .engine-panel { border-color: var(--engine); }
-  .engine-panel .label { color: var(--engine); }
-  .engine-status { font-size: 11px; color: var(--muted); margin-bottom: 8px; }
-  .engine-line { display: flex; align-items: center; padding: 6px 8px; border-radius: 4px; margin-bottom: 4px; background: rgba(108, 92, 231, 0.1); font-family: "SF Mono", Consolas, monospace; font-size: 13px; }
-  .engine-line.played { background: rgba(92, 184, 92, 0.25); }
-  .engine-rank { width: 24px; color: var(--muted); font-size: 11px; }
-  .engine-move { flex: 1; font-weight: 600; }
-  .engine-eval { color: var(--muted); font-size: 12px; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100vh; overflow: hidden; }
+  body {
+    background: var(--bg); color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+    display: grid;
+    grid-template-rows: 56px 1fr 56px;
+  }
+
+  /* Header */
+  header.top {
+    padding: 0 20px;
+    display: flex; align-items: center; gap: 14px;
+    border-bottom: 1px solid var(--border);
+    background: var(--panel);
+  }
+  header.top h1 {
+    font-size: 16px; font-weight: 700;
+    letter-spacing: -0.01em;
+  }
+  header.top .sep { color: var(--muted); }
+  header.top .line-info {
+    font-size: 14px; color: var(--text); flex: 1;
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  }
+  header.top .line-info .opening-tag {
+    color: var(--muted); font-size: 12px; margin-right: 6px;
+  }
+  header.top .priority {
+    font-size: 11px; color: var(--warn); font-weight: 600;
+    background: var(--warn-bg); padding: 3px 8px; border-radius: 4px;
+  }
+  .color-badge {
+    padding: 7px 14px; border-radius: 999px;
+    font-size: 12px; font-weight: 700;
+    letter-spacing: 0.06em;
+    display: inline-flex; align-items: center; gap: 8px;
+    border: 1px solid var(--border);
+  }
+  .color-badge::before {
+    content: ''; width: 12px; height: 12px; border-radius: 50%;
+    box-shadow: 0 0 0 1px var(--border);
+  }
+  .color-badge.white { background: oklch(0.96 0.005 250); color: oklch(0.18 0.005 250); }
+  .color-badge.white::before { background: oklch(0.18 0.005 250); }
+  .color-badge.black { background: oklch(0.14 0.005 250); color: oklch(0.96 0.005 250); }
+  .color-badge.black::before { background: oklch(0.96 0.005 250); }
+
+  /* Main */
+  main {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 380px;
+    gap: 14px;
+    padding: 14px 18px;
+    min-height: 0;
+  }
+  .board-wrap {
+    display: flex; align-items: center; justify-content: center;
+    min-width: 0; min-height: 0;
+  }
+  #board {
+    /* JS sets explicit width/height */
+  }
+
+  .side {
+    display: flex; flex-direction: column; gap: 10px;
+    min-height: 0;
+  }
+  .panel {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 12px 14px;
+    flex-shrink: 0;
+  }
+  .panel.grow { flex: 1; min-height: 0; display: flex; flex-direction: column; overflow: hidden; }
+  .panel-label {
+    font-size: 10px; font-weight: 700;
+    color: var(--muted);
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .panel-meta { color: var(--muted); font-weight: 500; font-size: 10px; letter-spacing: 0.04em; text-transform: none; }
+
+  /* Engine panel */
+  .engine-rows { display: flex; flex-direction: column; gap: 5px; }
+  .engine-row {
+    display: grid; grid-template-columns: 18px 1fr auto;
+    align-items: center; gap: 10px;
+    padding: 8px 10px; border-radius: 6px;
+    background: oklch(0.20 0.01 250);
+    font-family: ui-monospace, "SF Mono", Consolas, monospace;
+    font-size: 13px;
+  }
+  .engine-row.played { background: var(--accent-bg); border: 1px solid var(--accent); padding: 7px 9px; }
+  .engine-rank { color: var(--muted); font-size: 11px; }
+  .engine-move { font-weight: 700; }
+  .engine-eval { font-size: 12px; font-variant-numeric: tabular-nums; }
   .engine-eval.plus { color: var(--accent); }
   .engine-eval.minus { color: var(--error); }
+  .engine-empty { color: var(--muted); font-size: 12px; padding: 6px 4px; }
+
+  /* Last move */
+  .last-move {
+    border-radius: 6px;
+    padding: 10px 12px;
+  }
+  .last-move.top1 { background: var(--accent-bg); border-left: 3px solid var(--accent); }
+  .last-move.alt  { background: var(--warn-bg);   border-left: 3px solid var(--warn); }
+  .last-move.out  { background: var(--error-bg);  border-left: 3px solid var(--error); }
+  .last-move.info { background: oklch(0.22 0.04 220); border-left: 3px solid var(--info); }
+  .last-move .lm-title { font-size: 14px; font-weight: 600; margin-bottom: 4px; }
+  .last-move .lm-detail { font-size: 12px; color: var(--muted); line-height: 1.45; }
+  .last-move strong { color: var(--text); }
+
+  /* History */
+  .history {
+    flex: 1; min-height: 0; overflow-y: auto;
+    font-family: ui-monospace, "SF Mono", Consolas, monospace;
+    font-size: 13px;
+    line-height: 1.65;
+    padding-right: 4px;
+  }
+  .history::-webkit-scrollbar { width: 6px; }
+  .history::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+  .h-pair { display: inline-block; margin-right: 10px; white-space: nowrap; }
+  .h-num { color: var(--muted); margin-right: 4px; font-size: 11px; }
+  .h-active { background: var(--accent-bg); padding: 1px 4px; border-radius: 3px; }
+
+  /* Plan */
+  .plan-box {
+    border-radius: 6px;
+    padding: 10px 12px;
+    background: oklch(0.22 0.04 145);
+    border-left: 3px solid var(--accent);
+  }
+  .plan-box .plan-title { font-size: 11px; font-weight: 700; letter-spacing: 0.12em; color: var(--accent); margin-bottom: 6px; text-transform: uppercase; }
+  .plan-box .plan-text { font-size: 12px; line-height: 1.5; color: var(--text); }
+
+  /* Controls */
+  .controls {
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: 6px;
+  }
+  .controls .full { grid-column: span 2; }
+  button {
+    background: var(--panel-hi);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 9px;
+    border-radius: 7px;
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    font-family: inherit;
+  }
+  button:hover { background: oklch(0.30 0.01 250); }
+  button.primary { background: var(--accent); border-color: transparent; color: oklch(0.15 0.05 145); font-weight: 600; }
+  button.primary:hover { filter: brightness(1.08); }
+
+  /* Footer */
+  footer.bottom {
+    padding: 0 18px;
+    display: flex; align-items: center; gap: 18px;
+    border-top: 1px solid var(--border);
+    background: var(--panel);
+  }
+  .stats { display: flex; gap: 14px; }
+  .stat { display: flex; flex-direction: column; align-items: center; min-width: 44px; }
+  .stat-v { font-size: 17px; font-weight: 700; font-variant-numeric: tabular-nums; line-height: 1; }
+  .stat-l { font-size: 9px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.12em; margin-top: 3px; }
+  .vdiv { width: 1px; height: 30px; background: var(--border); }
+  .progress { flex: 0 0 auto; display: flex; align-items: center; gap: 8px; font-size: 11px; color: var(--muted); }
+  .progress-bar { width: 90px; height: 4px; background: var(--border); border-radius: 2px; overflow: hidden; }
+  .progress-fill { height: 100%; background: var(--accent); transition: width 0.3s; }
+  .filters { display: flex; gap: 5px; flex: 1; justify-content: flex-end; flex-wrap: wrap; }
+  .chip {
+    padding: 5px 11px; border: 1px solid var(--border); border-radius: 999px;
+    font-size: 11px; cursor: pointer; background: transparent; color: var(--muted);
+  }
+  .chip.active { background: var(--accent); color: oklch(0.15 0.05 145); border-color: transparent; font-weight: 600; }
 </style>
 </head>
 <body>
-<div class="wrap">
-  <div>
-    <h1>Chess Drill <span style="color:var(--muted);font-weight:400;font-size:14px">- engine-driven</span></h1>
-    <div class="subtitle" id="subtitle">Chargement...</div>
+
+<header class="top">
+  <h1>Chess Drill</h1>
+  <span class="sep">/</span>
+  <div class="line-info" id="line-info"><span class="opening-tag">Chargement</span></div>
+  <span class="priority" id="priority" style="display:none"></span>
+  <div class="color-badge black" id="color-badge">—</div>
+</header>
+
+<main>
+  <div class="board-wrap">
     <div id="board"></div>
-    <div class="hint">Joue ton coup en drag&drop. Stockfish décide le top à chaque position - tu vois si tu matches.</div>
   </div>
 
-  <div>
+  <aside class="side">
+    <!-- Engine -->
     <div class="panel">
-      <div class="label">Ligne <span class="turn-indicator" id="color-indicator">BLANCS</span></div>
-      <div class="opening" id="opening-name">-</div>
-      <div class="moves-played" id="moves-played">-</div>
-      <div class="priority" id="priority"></div>
-      <div class="progress-bar"><div class="progress-fill" id="progress" style="width:0%"></div></div>
-    </div>
-
-    <div class="panel feedback" id="feedback">
-      <div class="label">À toi de jouer</div>
-      <div style="font-size: 14px; color: var(--muted);">Chargement.</div>
-    </div>
-
-    <div class="panel engine-panel">
-      <div class="label">Stockfish - top 3 moves de la position</div>
-      <div class="engine-status" id="engine-status">Initialisation...</div>
-      <div id="engine-lines">
-        <div style="color:var(--muted);font-size:12px">En attente.</div>
+      <div class="panel-label">
+        Stockfish <span class="panel-meta" id="engine-meta">init...</span>
+      </div>
+      <div class="engine-rows" id="engine-rows">
+        <div class="engine-empty">En attente.</div>
       </div>
     </div>
 
-    <div class="controls">
-      <button class="secondary" id="btn-back" title="Flèche gauche">← Retour</button>
-      <button class="secondary" id="btn-forward" title="Flèche droite">Avancer →</button>
-      <button id="btn-next">Ligne suivante</button>
-      <button class="secondary" id="btn-restart">Recommencer</button>
-    </div>
-
-    <div class="panel" style="margin-top:12px">
-      <div class="label">Session</div>
-      <div class="stats">
-        <div><div class="stat-value" id="stat-top1">0</div><div class="stat-label">Top 1</div></div>
-        <div><div class="stat-value" id="stat-alt">0</div><div class="stat-label">Alt OK</div></div>
-        <div><div class="stat-value" id="stat-ko">0</div><div class="stat-label">Hors T3</div></div>
-        <div><div class="stat-value" id="stat-lines">0</div><div class="stat-label">Lignes</div></div>
+    <!-- Last move feedback -->
+    <div class="panel" id="last-move-panel">
+      <div class="panel-label">Statut</div>
+      <div class="last-move info" id="last-move">
+        <div class="lm-title">Charge une ligne</div>
+        <div class="lm-detail">À toi de jouer dès que la position se met en place.</div>
       </div>
     </div>
 
-    <div class="panel">
-      <div class="label">Filtrer</div>
-      <div class="filter" id="filter-chips"></div>
+    <!-- History (grows to fill) -->
+    <div class="panel grow">
+      <div class="panel-label">Coups joués <span class="panel-meta" id="progress-text">0/5</span></div>
+      <div class="history" id="history">(début)</div>
     </div>
+
+    <!-- Controls -->
+    <div class="panel">
+      <div class="controls">
+        <button id="btn-back" title="Flèche gauche">← Retour</button>
+        <button id="btn-forward" title="Flèche droite">Avancer →</button>
+        <button id="btn-next" class="primary full">Ligne suivante</button>
+        <button id="btn-restart" class="full">Recommencer la ligne</button>
+      </div>
+    </div>
+  </aside>
+</main>
+
+<footer class="bottom">
+  <div class="stats">
+    <div class="stat"><div class="stat-v" id="stat-top1">0</div><div class="stat-l">Top 1</div></div>
+    <div class="stat"><div class="stat-v" id="stat-alt">0</div><div class="stat-l">Alt</div></div>
+    <div class="stat"><div class="stat-v" id="stat-out">0</div><div class="stat-l">Hors T3</div></div>
+    <div class="stat"><div class="stat-v" id="stat-lines">0</div><div class="stat-l">Lignes</div></div>
   </div>
-</div>
+  <div class="vdiv"></div>
+  <div class="progress">
+    <span>Drill</span>
+    <div class="progress-bar"><div class="progress-fill" id="progress-fill" style="width:0%"></div></div>
+  </div>
+  <div class="vdiv"></div>
+  <div class="filters" id="filter-chips"></div>
+</footer>
 
 <script>
 // --- State ---
@@ -138,35 +293,34 @@ let drillCompleted = false;
 // Engine
 let stockfish = null, engineReady = false;
 let currentEngineFen = null, engineDepth = 0;
-let pvs = {}; // multipv num -> {uci, san, score(white-pov), raw(stm-pov), type, depth}
+let pvs = {};
 let engineDone = false;
-let onEngineReady = null; // callback when current analysis done
+let onEngineReady = null;
+let lastPlayedSan = null;
 
 // --- Engine ---
 function initEngine() {
   try {
     stockfish = new Worker('stockfish.js');
     stockfish.onmessage = onEngineMessage;
-    stockfish.onerror = e => setEngineStatus('Erreur engine: ' + (e.message || ''));
+    stockfish.onerror = e => setEngineMeta('erreur: ' + (e.message || ''));
     stockfish.postMessage('uci');
     stockfish.postMessage('setoption name MultiPV value 3');
     stockfish.postMessage('isready');
   } catch (e) {
-    setEngineStatus('Engine non disponible: ' + e.message);
+    setEngineMeta('non disponible');
   }
 }
 
 function onEngineMessage(event) {
   const line = typeof event.data === 'string' ? event.data : '';
   if (!line) return;
-
-  if (line === 'uciok') setEngineStatus('Engine chargé.');
+  if (line === 'uciok') setEngineMeta('chargé');
   if (line === 'readyok') {
     engineReady = true;
-    setEngineStatus('Stockfish prêt.');
+    setEngineMeta('prêt');
     if (onEngineReady) { const cb = onEngineReady; onEngineReady = null; cb(); }
   }
-
   const m = line.match(/^info\s+depth\s+(\d+).*?multipv\s+(\d+).*?score\s+(cp|mate)\s+(-?\d+).*?\spv\s+(\S+)/);
   if (m && currentEngineFen) {
     const depth = parseInt(m[1]);
@@ -179,9 +333,8 @@ function onEngineMessage(event) {
     const whiteScore = stm === 'w' ? rawScore : -rawScore;
     pvs[pvNum] = { uci: firstUci, san, score: whiteScore, raw: rawScore, type: scoreType, depth };
     engineDepth = Math.max(engineDepth, depth);
-    updateEnginePanel();
+    renderEngine();
   }
-
   if (line.startsWith('bestmove')) {
     engineDone = true;
     if (onEngineReady) { const cb = onEngineReady; onEngineReady = null; cb(); }
@@ -197,8 +350,8 @@ function analyzePosition(fen, targetDepth) {
   stockfish.postMessage('stop');
   stockfish.postMessage('position fen ' + fen);
   stockfish.postMessage('go depth ' + (targetDepth || 12));
-  setEngineStatus('Analyse en cours...');
-  document.getElementById('engine-lines').innerHTML = '<div style="color:var(--muted);font-size:12px">Calcul...</div>';
+  setEngineMeta('analyse...');
+  document.getElementById('engine-rows').innerHTML = '<div class="engine-empty">Calcul de la position...</div>';
 }
 
 function waitForEngine(minDepth, callback) {
@@ -216,40 +369,34 @@ function uciToSan(uci, fen) {
 }
 
 function formatEval(pv) {
-  // Display eval from side-to-move (user) perspective so rank 1 always has highest score
   if (pv.type === 'mate') return '#' + pv.raw;
   const v = (pv.raw / 100).toFixed(2);
   return (pv.raw >= 0 ? '+' : '') + v;
 }
 
-function setEngineStatus(s) { document.getElementById('engine-status').textContent = s; }
+function setEngineMeta(s) {
+  const meta = engineDepth > 0 ? `d${engineDepth} · ${s}` : s;
+  document.getElementById('engine-meta').textContent = meta;
+}
 
-function updateEnginePanel() {
+function renderEngine() {
   const list = [1, 2, 3].map(n => pvs[n]).filter(Boolean);
   if (list.length === 0) return;
+  const lastNorm = lastPlayedSan ? lastPlayedSan.replace(/[+#!?]/g, '') : null;
   const html = list.map((pv, i) => {
     const evalCls = pv.raw > 0 ? 'plus' : (pv.raw < 0 ? 'minus' : '');
-    return `<div class="engine-line">
-      <div class="engine-rank">${i + 1}.</div>
+    const isPlayed = lastNorm && pv.san.replace(/[+#!?]/g, '') === lastNorm;
+    return `<div class="engine-row ${isPlayed ? 'played' : ''}">
+      <div class="engine-rank">${i + 1}</div>
       <div class="engine-move">${pv.san}</div>
       <div class="engine-eval ${evalCls}">${formatEval(pv)}</div>
     </div>`;
   }).join('');
-  document.getElementById('engine-lines').innerHTML = html;
-  setEngineStatus('Profondeur ' + engineDepth + (engineDone ? ' (final)' : ''));
+  document.getElementById('engine-rows').innerHTML = html;
+  setEngineMeta(engineDone ? 'final' : 'en cours');
 }
 
-function highlightPlayedMove(playedSan) {
-  const normalize = s => s.replace(/[+#!?]/g, '');
-  const target = normalize(playedSan);
-  const els = document.querySelectorAll('.engine-line');
-  els.forEach((el, i) => {
-    const pv = pvs[i + 1];
-    if (pv && normalize(pv.san) === target) el.classList.add('played');
-  });
-}
-
-// --- Game / drill flow ---
+// --- Repertoire / lifecycle ---
 
 async function loadRepertoire() {
   try {
@@ -257,11 +404,10 @@ async function loadRepertoire() {
     const data = await res.json();
     lines = data.lines;
     toleranceCp = data.tolerance_cp || 30;
-    document.getElementById('subtitle').textContent = lines.length + ' lignes - tolérance ' + toleranceCp + 'cp';
     buildFilters();
     nextLine();
   } catch (e) {
-    document.getElementById('subtitle').textContent = 'Erreur: ' + e.message;
+    document.getElementById('line-info').textContent = 'Erreur: ' + e.message;
   }
 }
 
@@ -297,6 +443,7 @@ function startLine() {
   drillCompleted = false;
   lastMoveBy = null;
   undoneStack = [];
+  lastPlayedSan = null;
   game = new Chess();
   for (const m of currentLine.setup) game.move(m);
 
@@ -311,52 +458,41 @@ function startLine() {
     pieceTheme: 'https://cdn.jsdelivr.net/gh/oakmac/chessboardjs@1.0.0/website/img/chesspieces/wikipedia/{piece}.png',
     onDragStart, onDrop, onSnapEnd,
   });
+  sizeBoard();
 
-  document.getElementById('color-indicator').textContent = currentLine.color === 'white' ? 'BLANCS' : 'NOIRS';
-  document.getElementById('color-indicator').className = 'turn-indicator ' + (currentLine.color === 'white' ? '' : 'black');
-  document.getElementById('opening-name').textContent = currentLine.opening + ' - ' + currentLine.label;
-  document.getElementById('priority').textContent = currentLine.priority || '';
-  document.getElementById('priority').style.display = currentLine.priority ? 'block' : 'none';
+  // Update header
+  document.getElementById('line-info').innerHTML =
+    `<span class="opening-tag">${currentLine.opening}</span>${currentLine.label}`;
+  const badge = document.getElementById('color-badge');
+  badge.textContent = 'TU JOUES ' + (currentLine.color === 'white' ? 'BLANCS' : 'NOIRS');
+  badge.className = 'color-badge ' + (currentLine.color === 'white' ? 'white' : 'black');
+  const prio = document.getElementById('priority');
+  if (currentLine.priority) { prio.textContent = currentLine.priority; prio.style.display = ''; }
+  else { prio.style.display = 'none'; }
 
-  showIntroFeedback();
-  updateMovesPlayed();
+  setLastMove('info', currentLine.label, currentLine.intro || 'À toi de jouer dès que la position est en place.');
+  updateHistory();
   updateProgress();
   advance();
 }
 
-function showIntroFeedback() {
-  const fb = document.getElementById('feedback');
-  fb.className = 'panel feedback info';
-  fb.innerHTML = `
-    <div class="label">Intro</div>
-    <div class="feedback-title info">${currentLine.label}</div>
-    <div class="why">${currentLine.intro || 'À toi de jouer.'}</div>
-  `;
-}
-
 function advance() {
-  // If drill quota reached, stop auto-advancing - we're in post-drill explore mode
   if (userMovesCount >= drillTotalMoves && !drillCompleted) {
     completeDrill();
     return;
   }
   if (drillCompleted) {
-    // Just analyze for exploration, no auto opponent moves
     analyzePosition(game.fen(), 14);
     return;
   }
   const turn = game.turn();
   if (turn === userColor) {
-    showUserTurnFeedback();
     analyzePosition(game.fen(), 12);
   } else {
-    // Opponent's turn - engine auto-plays ONLY if last move was user's color
     if (lastMoveBy === userColor) {
-      showOpponentThinking();
       analyzePosition(game.fen(), 12);
       waitForEngine(10, playOpponentMove);
     } else {
-      showFreeExploreFeedback();
       analyzePosition(game.fen(), 12);
     }
   }
@@ -366,47 +502,18 @@ function completeDrill() {
   drillCompleted = true;
   stats.lines_done++;
   updateStats();
-  const fb = document.getElementById('feedback');
-  fb.className = 'panel feedback done';
-  const planHtml = currentLine.plan ? `
-    <div class="plan-block">
-      <div class="label">PLAN à partir d'ici</div>
-      <div class="text">${currentLine.plan}</div>
+  const planHtml = currentLine.plan
+    ? `<div class="plan-box" style="margin-top:8px"><div class="plan-title">Plan à partir d'ici</div><div class="plan-text">${currentLine.plan}</div></div>`
+    : '';
+  document.getElementById('last-move-panel').innerHTML = `
+    <div class="panel-label">Drill terminé</div>
+    <div class="last-move top1">
+      <div class="lm-title">✓ Ouverture drillée (${drillTotalMoves} coups)</div>
+      <div class="lm-detail">Tu peux maintenant explorer : back/forward (← →), jouer des alternatives. Stockfish ré-analyse à chaque coup. Clique "Ligne suivante" quand tu veux.</div>
     </div>
-  ` : '';
-  fb.innerHTML = `
-    <div class="feedback-title done">✓ Drill ouverture terminée (${drillTotalMoves} coups)</div>
-    <div class="why">Tu peux maintenant explorer librement : back/forward (← →), jouer alternatives, voir les recommandations Stockfish. Ou passe à la ligne suivante.</div>
     ${planHtml}
   `;
   analyzePosition(game.fen(), 14);
-}
-
-function showFreeExploreFeedback() {
-  const fb = document.getElementById('feedback');
-  fb.className = 'panel feedback info';
-  fb.innerHTML = `
-    <div class="label">Exploration libre</div>
-    <div style="font-size: 13px; color: var(--muted);">Tu joues l'adversaire manuellement. Stockfish analyse - aucun coup auto. Joue ton propre coup pour relancer la séquence drill.</div>
-  `;
-}
-
-function showUserTurnFeedback() {
-  const fb = document.getElementById('feedback');
-  fb.className = 'panel feedback';
-  fb.innerHTML = `
-    <div class="label">À toi - coup ${userMovesCount + 1}/${drillTotalMoves}</div>
-    <div style="font-size: 14px; color: var(--muted);">Joue ton coup. Stockfish indique son top 3 - tu vois après si tu as matché.</div>
-  `;
-}
-
-function showOpponentThinking() {
-  const fb = document.getElementById('feedback');
-  fb.className = 'panel feedback info';
-  fb.innerHTML = `
-    <div class="label">L'adversaire réfléchit</div>
-    <div style="font-size: 13px; color: var(--muted);">Stockfish joue le top move pour le noir...</div>
-  `;
 }
 
 function playOpponentMove() {
@@ -414,20 +521,20 @@ function playOpponentMove() {
   if (!top) { setTimeout(() => waitForEngine(10, playOpponentMove), 300); return; }
   const colorMoving = game.turn();
   const moveObj = game.move({
-    from: top.uci.substr(0, 2),
-    to: top.uci.substr(2, 2),
+    from: top.uci.substr(0, 2), to: top.uci.substr(2, 2),
     promotion: top.uci.length > 4 ? top.uci.substr(4, 1) : undefined
   });
-  if (!moveObj) { console.error('opponent move illegal', top); return; }
+  if (!moveObj) return;
   lastMoveBy = colorMoving;
-  undoneStack = []; // clear redo on new move
+  undoneStack = [];
   board.position(game.fen(), true);
-  updateMovesPlayed();
+  updateHistory();
+  // Show opponent move briefly in last-move (informational)
+  setLastMove('info', `Adversaire : ${moveObj.san}`, `Coup top engine pour les ${colorMoving === 'w' ? 'blancs' : 'noirs'} (${formatEval(top)}). À toi maintenant.`);
   setTimeout(advance, 700);
 }
 
 function onDragStart(source, piece) {
-  // Always allow movement of any color (always-explore mode)
   const turn = game.turn();
   if ((turn === 'w' && piece.search(/^b/) !== -1) || (turn === 'b' && piece.search(/^w/) !== -1)) return false;
 }
@@ -437,32 +544,28 @@ function onDrop(source, target) {
   const move = game.move({ from: source, to: target, promotion: 'q' });
   if (move === null) return 'snapback';
   lastMoveBy = colorMoving;
-  undoneStack = []; // clear redo when a fresh move is made
-
-  // Show informational feedback (never reject)
-  showUserMoveFeedback(move, colorMoving);
-  updateMovesPlayed();
+  undoneStack = [];
+  lastPlayedSan = move.san;
+  evaluateUserMove(move, colorMoving);
+  updateHistory();
   updateProgress();
   setTimeout(() => board.position(game.fen()), 50);
-  // Schedule next step
-  setTimeout(advance, 800);
+  setTimeout(advance, 1200);
 }
 
 function onSnapEnd() { board.position(game.fen()); }
 
 function normalize(san) { return san.replace(/[+#!?]/g, ''); }
 
-function showUserMoveFeedback(move, colorMoving) {
+function evaluateUserMove(move, colorMoving) {
   const top1 = pvs[1], top2 = pvs[2], top3 = pvs[3];
   const playedNorm = normalize(move.san);
   const isUserColor = colorMoving === userColor;
-
   if (isUserColor) userMovesCount++;
 
   if (!top1) {
-    const fb = document.getElementById('feedback');
-    fb.className = 'panel feedback info';
-    fb.innerHTML = `<div class="feedback-title info">${move.san} joué</div><div class="why">Engine pas encore prêt pour cette position. Pas de comparaison disponible.</div>`;
+    setLastMove('info', `${move.san}`, `Engine pas encore prêt. Pas de comparaison disponible pour cette position.`);
+    renderEngine();
     return;
   }
 
@@ -471,44 +574,54 @@ function showUserMoveFeedback(move, colorMoving) {
   else if (top2 && normalize(top2.san) === playedNorm) rank = 2;
   else if (top3 && normalize(top3.san) === playedNorm) rank = 3;
 
-  highlightPlayedMove(move.san);
-  const fb = document.getElementById('feedback');
-  const colorLabel = colorMoving === 'w' ? 'BLANCS' : 'NOIRS';
+  const colorLabel = colorMoving === 'w' ? 'Blancs' : 'Noirs';
 
   if (rank === 1) {
     if (isUserColor) stats.top1++;
-    fb.className = 'panel feedback success';
-    fb.innerHTML = `<div class="feedback-title ok">✓ TOP 1 - ${move.san} (${formatEval(top1)})</div><div class="why">${colorLabel} : exactement le coup que Stockfish recommande.</div>`;
+    setLastMove('top1', `✓ TOP 1 · ${move.san} (${formatEval(top1)})`, `${colorLabel} : exactement le coup que Stockfish recommande.`);
   } else if (rank) {
-    if (isUserColor) stats.alt++;
     const pv = rank === 2 ? top2 : top3;
-    const withinTol = Math.abs(pv.raw - top1.raw) <= toleranceCp;
-    fb.className = 'panel feedback ' + (withinTol ? 'success' : 'warn');
-    fb.innerHTML = `<div class="feedback-title ${withinTol ? 'ok' : 'warn'}">${withinTol ? '✓' : '⚠'} Rank ${rank} - ${move.san} (${formatEval(pv)})</div><div class="why">${colorLabel} : top 1 engine = <strong>${top1.san}</strong> (${formatEval(top1)}). ${withinTol ? 'Dans la tolérance.' : 'Écart de ' + Math.abs(pv.raw - top1.raw) + 'cp - sub-optimal.'}</div>`;
+    const gap = Math.abs(pv.raw - top1.raw);
+    const within = gap <= toleranceCp;
+    if (isUserColor) stats.alt++;
+    setLastMove(within ? 'top1' : 'alt',
+      `${within ? '✓' : '⚠'} Rank ${rank} · ${move.san} (${formatEval(pv)})`,
+      `${colorLabel} : top 1 engine = <strong>${top1.san}</strong> (${formatEval(top1)}). ${within ? `Écart ${gap}cp - dans la tolérance.` : `Écart ${gap}cp - sub-optimal.`}`);
   } else {
     if (isUserColor) stats.outside++;
-    fb.className = 'panel feedback error';
-    fb.innerHTML = `<div class="feedback-title ko">⚠ ${move.san} - hors top 3</div><div class="why">${colorLabel} : top 1 engine = <strong>${top1.san}</strong> (${formatEval(top1)}). Ton coup n'est pas dans le top 3 de Stockfish. (Coup accepté, on continue.)</div>`;
+    setLastMove('out',
+      `⚠ Hors top 3 · ${move.san}`,
+      `${colorLabel} : top 1 engine = <strong>${top1.san}</strong> (${formatEval(top1)}). Top 2: <strong>${top2 ? top2.san : '-'}</strong>, Top 3: <strong>${top3 ? top3.san : '-'}</strong>. (Coup accepté, on continue.)`);
   }
   updateStats();
+  renderEngine();
+}
+
+function setLastMove(state, title, detail) {
+  const panel = document.getElementById('last-move-panel');
+  panel.innerHTML = `
+    <div class="panel-label">${state === 'info' ? 'Statut' : 'Dernier coup'}</div>
+    <div class="last-move ${state}">
+      <div class="lm-title">${title}</div>
+      <div class="lm-detail">${detail}</div>
+    </div>
+  `;
 }
 
 function goBack() {
-  if (game.history().length <= (currentLine ? currentLine.setup.length : 0)) return; // don't undo setup
+  if (game.history().length <= (currentLine ? currentLine.setup.length : 0)) return;
   const move = game.undo();
   if (move) {
     undoneStack.push(move);
     if (move.color === userColor) userMovesCount = Math.max(0, userMovesCount - 1);
-    // Reset lastMoveBy from current history
     const hist = game.history({ verbose: true });
     lastMoveBy = hist.length > 0 ? hist[hist.length - 1].color : null;
+    lastPlayedSan = null;
     board.position(game.fen());
-    updateMovesPlayed();
+    updateHistory();
     updateProgress();
+    setLastMove('info', `Retour : ${move.san} annulé`, 'Tu peux rejouer (Avancer →) ou tester un autre coup. Stockfish ré-analyse.');
     analyzePosition(game.fen(), 12);
-    const fb = document.getElementById('feedback');
-    fb.className = 'panel feedback info';
-    fb.innerHTML = `<div class="label">Retour en arrière</div><div style="font-size:13px;color:var(--muted);">Coup ${move.san} annulé. Joue ou avance avec → pour rejouer.</div>`;
   }
 }
 
@@ -519,38 +632,65 @@ function goForward() {
   if (replayed) {
     lastMoveBy = replayed.color;
     if (replayed.color === userColor) userMovesCount++;
+    lastPlayedSan = replayed.san;
     board.position(game.fen());
-    updateMovesPlayed();
+    updateHistory();
     updateProgress();
+    setLastMove('info', `Avance : ${replayed.san}`, 'Coup rejoué depuis la pile.');
     analyzePosition(game.fen(), 12);
-    const fb = document.getElementById('feedback');
-    fb.className = 'panel feedback info';
-    fb.innerHTML = `<div class="label">Avance</div><div style="font-size:13px;color:var(--muted);">Coup ${replayed.san} rejoué.</div>`;
   }
 }
 
-function updateMovesPlayed() {
-  const history = game.history();
-  const html = history.map((m, i) => {
-    const num = i % 2 === 0 ? `<span style="color:var(--muted)">${(i / 2) + 1}.</span>` : '';
-    return `${num} ${m}`;
-  }).join(' ');
-  document.getElementById('moves-played').innerHTML = html || '<span style="color:var(--muted)">(début)</span>';
+function updateHistory() {
+  const hist = game ? game.history() : [];
+  if (hist.length === 0) {
+    document.getElementById('history').innerHTML = '<span style="color:var(--muted)">(début)</span>';
+    return;
+  }
+  let html = '';
+  for (let i = 0; i < hist.length; i += 2) {
+    const num = Math.floor(i / 2) + 1;
+    const white = hist[i];
+    const black = hist[i + 1] || '';
+    html += `<span class="h-pair"><span class="h-num">${num}.</span>${white}${black ? ' ' + black : ''}</span>`;
+  }
+  const el = document.getElementById('history');
+  el.innerHTML = html;
+  el.scrollTop = el.scrollHeight;
+  document.getElementById('progress-text').textContent = userMovesCount + '/' + drillTotalMoves;
 }
 
 function updateProgress() {
   const pct = drillTotalMoves > 0 ? Math.min(100, (userMovesCount / drillTotalMoves) * 100) : 0;
-  document.getElementById('progress').style.width = pct + '%';
+  document.getElementById('progress-fill').style.width = pct + '%';
+  document.getElementById('progress-text').textContent = userMovesCount + '/' + drillTotalMoves;
 }
 
 function updateStats() {
   document.getElementById('stat-top1').textContent = stats.top1;
   document.getElementById('stat-alt').textContent = stats.alt;
-  document.getElementById('stat-ko').textContent = stats.outside;
+  document.getElementById('stat-out').textContent = stats.outside;
   document.getElementById('stat-lines').textContent = stats.lines_done;
 }
 
-document.getElementById('btn-next').addEventListener('click', () => { if (!drillCompleted) { stats.lines_done++; updateStats(); } nextLine(); });
+function sizeBoard() {
+  const wrap = document.querySelector('.board-wrap');
+  if (!wrap) return;
+  const w = wrap.clientWidth;
+  const h = wrap.clientHeight;
+  const size = Math.max(280, Math.min(w, h) - 4);
+  const el = document.getElementById('board');
+  el.style.width = size + 'px';
+  el.style.height = size + 'px';
+  if (board) board.resize();
+}
+
+window.addEventListener('resize', sizeBoard);
+
+document.getElementById('btn-next').addEventListener('click', () => {
+  if (!drillCompleted) { stats.lines_done++; updateStats(); }
+  nextLine();
+});
 document.getElementById('btn-restart').addEventListener('click', startLine);
 document.getElementById('btn-back').addEventListener('click', goBack);
 document.getElementById('btn-forward').addEventListener('click', goForward);
