@@ -132,6 +132,8 @@ let userColor = 'w';
 let lastMoveBy = null;
 let undoneStack = [];
 let userMovesCount = 0;
+let drillTotalMoves = 5;
+let drillCompleted = false;
 
 // Engine
 let stockfish = null, engineReady = false;
@@ -291,6 +293,8 @@ function nextLine() {
 
 function startLine() {
   userMovesCount = 0;
+  drillTotalMoves = currentLine.drill_moves || 5;
+  drillCompleted = false;
   lastMoveBy = null;
   undoneStack = [];
   game = new Chess();
@@ -331,23 +335,51 @@ function showIntroFeedback() {
 }
 
 function advance() {
+  // If drill quota reached, stop auto-advancing - we're in post-drill explore mode
+  if (userMovesCount >= drillTotalMoves && !drillCompleted) {
+    completeDrill();
+    return;
+  }
+  if (drillCompleted) {
+    // Just analyze for exploration, no auto opponent moves
+    analyzePosition(game.fen(), 14);
+    return;
+  }
   const turn = game.turn();
   if (turn === userColor) {
     showUserTurnFeedback();
     analyzePosition(game.fen(), 12);
   } else {
     // Opponent's turn - engine auto-plays ONLY if last move was user's color
-    // (so if user manually plays opponent's color, we don't auto-respond)
     if (lastMoveBy === userColor) {
       showOpponentThinking();
       analyzePosition(game.fen(), 12);
       waitForEngine(10, playOpponentMove);
     } else {
-      // User is exploring both sides, just analyze and wait
       showFreeExploreFeedback();
       analyzePosition(game.fen(), 12);
     }
   }
+}
+
+function completeDrill() {
+  drillCompleted = true;
+  stats.lines_done++;
+  updateStats();
+  const fb = document.getElementById('feedback');
+  fb.className = 'panel feedback done';
+  const planHtml = currentLine.plan ? `
+    <div class="plan-block">
+      <div class="label">PLAN à partir d'ici</div>
+      <div class="text">${currentLine.plan}</div>
+    </div>
+  ` : '';
+  fb.innerHTML = `
+    <div class="feedback-title done">✓ Drill ouverture terminée (${drillTotalMoves} coups)</div>
+    <div class="why">Tu peux maintenant explorer librement : back/forward (← →), jouer alternatives, voir les recommandations Stockfish. Ou passe à la ligne suivante.</div>
+    ${planHtml}
+  `;
+  analyzePosition(game.fen(), 14);
 }
 
 function showFreeExploreFeedback() {
@@ -363,7 +395,7 @@ function showUserTurnFeedback() {
   const fb = document.getElementById('feedback');
   fb.className = 'panel feedback';
   fb.innerHTML = `
-    <div class="label">À toi - coup ${userMovesCount + 1}</div>
+    <div class="label">À toi - coup ${userMovesCount + 1}/${drillTotalMoves}</div>
     <div style="font-size: 14px; color: var(--muted);">Joue ton coup. Stockfish indique son top 3 - tu vois après si tu as matché.</div>
   `;
 }
@@ -507,11 +539,7 @@ function updateMovesPlayed() {
 }
 
 function updateProgress() {
-  // Show % of plies played beyond setup
-  const setupLen = currentLine ? currentLine.setup.length : 0;
-  const histLen = game ? game.history().length : 0;
-  const beyondSetup = Math.max(0, histLen - setupLen);
-  const pct = Math.min(100, (beyondSetup / 12) * 100); // 12 plies = "full" arbitrarily
+  const pct = drillTotalMoves > 0 ? Math.min(100, (userMovesCount / drillTotalMoves) * 100) : 0;
   document.getElementById('progress').style.width = pct + '%';
 }
 
@@ -522,7 +550,7 @@ function updateStats() {
   document.getElementById('stat-lines').textContent = stats.lines_done;
 }
 
-document.getElementById('btn-next').addEventListener('click', () => { stats.lines_done++; updateStats(); nextLine(); });
+document.getElementById('btn-next').addEventListener('click', () => { if (!drillCompleted) { stats.lines_done++; updateStats(); } nextLine(); });
 document.getElementById('btn-restart').addEventListener('click', startLine);
 document.getElementById('btn-back').addEventListener('click', goBack);
 document.getElementById('btn-forward').addEventListener('click', goForward);
